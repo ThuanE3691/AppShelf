@@ -4,9 +4,12 @@ export const SLUG_MAX = 30;
 
 /**
  * Paths WordPress Multisite (subdirectory mode) or AppShelf already use. A site
- * with one of these slugs would shadow core routes or the showcase sites.
+ * with one of these slugs would shadow core routes, the showcase sites or the
+ * network itself (keep "appshelf" entries in step with wordpress/scripts/site-ops.php).
  */
 const RESERVED = new Set([
+  "appshelf",
+  "appshelf-admin",
   "admin",
   "api",
   "blog",
