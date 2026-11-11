@@ -47,11 +47,29 @@ const isGone = (site: Site) => (GONE as readonly string[]).includes(site.status)
 const awaitsProvisioning = (site: Site) =>
   site.wpBlogId === null && (PROVISIONABLE as readonly string[]).includes(site.status);
 
-const provision: JobHandler = async (job, { db, scripts, log }) => {
+/**
+ * A cancel that arrived while provisioning was still pending (its archive job
+ * skipped the unprovisioned site) takes effect in the provision job itself.
+ */
+async function archiveIfLicenseInactive({ db, scripts, log }: HandlerDeps, site: Site, blogId: number) {
+  if (await licenseIsActive(db, site)) return;
+  await scripts.archive(blogId);
+  await db
+    .update(sites)
+    .set({ status: "archived" })
+    .where(and(eq(sites.id, site.id), notInArray(sites.status, [...GONE])));
+  log.info("site archived after provisioning: license is inactive", { siteId: site.id, blogId });
+}
+
+const provision: JobHandler = async (job, deps) => {
+  const { db, scripts, log } = deps;
   const site = await requireSite(db, job);
   if (isGone(site)) return log.info("provision skipped: site is being deleted", { siteId: site.id });
   if (site.wpBlogId !== null && (site.status === "active" || site.status === "archived")) {
-    return log.info("provision skipped: already provisioned", { siteId: site.id, blogId: site.wpBlogId });
+    log.info("provision skipped: already provisioned", { siteId: site.id, blogId: site.wpBlogId });
+    // A retry after the post-create archive failed still has to finish it.
+    if (site.status === "active") await archiveIfLicenseInactive(deps, site, site.wpBlogId);
+    return;
   }
 
   const [owner] = await db.select({ email: users.email }).from(users).where(eq(users.id, site.userId)).limit(1);
@@ -80,16 +98,7 @@ const provision: JobHandler = async (job, { db, scripts, log }) => {
     .where(eq(sites.id, site.id));
   log.info("site provisioned", { siteId: site.id, blogId: created.blogId, url: created.url });
 
-  // A cancel that arrived while provisioning was still pending (its archive job
-  // skipped the unprovisioned site) takes effect now, in the same job.
-  if (!(await licenseIsActive(db, site))) {
-    await scripts.archive(created.blogId);
-    await db
-      .update(sites)
-      .set({ status: "archived" })
-      .where(and(eq(sites.id, site.id), notInArray(sites.status, [...GONE])));
-    log.info("site archived right after provisioning: license is inactive", { siteId: site.id });
-  }
+  await archiveIfLicenseInactive(deps, site, created.blogId);
 };
 
 const archive: JobHandler = async (job, { db, scripts, log }) => {

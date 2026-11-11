@@ -94,6 +94,39 @@ describe("archive and unarchive before the site is provisioned", () => {
     expect(wp.state.archived.get(row.wpBlogId!)).toBe(true);
   });
 
+  it("a retried provision finishes the archive that failed right after creating the blog", async () => {
+    await cancel();
+    const realArchive = wp.scripts.archive;
+    let archiveCalls = 0;
+    wp.scripts.archive = async (blogId) => {
+      archiveCalls++;
+      if (archiveCalls === 1) throw new Error("WordPress hiccup while archiving");
+      return realArchive(blogId);
+    };
+    const provision = await enqueueJob("site.provision", { siteId: fixture.site.id }, { db });
+    expect(await runner.runOnce()).toBe("retry");
+    expect((await site()).status).toBe("active");
+
+    await makeDue(provision.id);
+    expect(await runner.runOnce()).toBe("done");
+    const row = await site();
+    expect(row.status).toBe("archived");
+    expect(wp.state.archived.get(row.wpBlogId!)).toBe(true);
+    expect(wp.state.calls.filter((c) => c.startsWith("create"))).toHaveLength(1);
+  });
+
+  it("a duplicate provision job leaves an archived site alone", async () => {
+    await cancel();
+    await enqueueJob("site.provision", { siteId: fixture.site.id }, { db });
+    expect(await runner.runOnce()).toBe("done");
+    expect((await site()).status).toBe("archived");
+    const calls = wp.state.calls.length;
+
+    await enqueueJob("site.provision", { siteId: fixture.site.id }, { db });
+    expect(await runner.runOnce()).toBe("done");
+    expect(wp.state.calls).toHaveLength(calls);
+  });
+
   it("provisioning leaves the site live when the license is active", async () => {
     await enqueueJob("site.provision", { siteId: fixture.site.id }, { db });
     expect(await runner.runOnce()).toBe("done");
