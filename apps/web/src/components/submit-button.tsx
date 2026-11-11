@@ -17,7 +17,7 @@ export function SubmitButton({
     <button type="submit" className={className} disabled={pending} aria-busy={pending}>
       {pending ? (
         <>
-          <span aria-hidden className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
+          <span aria-hidden className="h-3 w-3 animate-spin border-2 border-current border-r-transparent" />
           {pendingLabel}
         </>
       ) : (

@@ -29,17 +29,11 @@ export function Countdown({ expiresAt, initialText }: { expiresAt: string; initi
 export function SecretValue({ value, label }: { value: string; label: string }) {
   const [shown, setShown] = useState(false);
   const [copied, setCopied] = useState(false);
+  const action = "label inline-flex min-h-8 items-center border-2 border-ink-950 bg-white px-2 text-ink-950 hover:bg-signal-500";
   return (
-    <span className="inline-flex items-center gap-2">
-      <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-800">
-        {shown ? value : "•".repeat(12)}
-      </code>
-      <button
-        type="button"
-        onClick={() => setShown((s) => !s)}
-        className="text-xs font-medium text-brand-700 hover:underline"
-        aria-label={`${shown ? "Hide" : "Show"} ${label}`}
-      >
+    <span className="flex flex-wrap items-center gap-2">
+      <code className="bg-ink-950 px-2 py-1 font-mono text-xs text-white">{shown ? value : "••••••••••••"}</code>
+      <button type="button" onClick={() => setShown((s) => !s)} className={action} aria-label={`${shown ? "Hide" : "Show"} ${label}`}>
         {shown ? "Hide" : "Show"}
       </button>
       <button
@@ -49,7 +43,7 @@ export function SecretValue({ value, label }: { value: string; label: string }) 
           setCopied(true);
           setTimeout(() => setCopied(false), 1500);
         }}
-        className="text-xs font-medium text-brand-700 hover:underline"
+        className={action}
         aria-label={`Copy ${label}`}
       >
         {copied ? "Copied" : "Copy"}

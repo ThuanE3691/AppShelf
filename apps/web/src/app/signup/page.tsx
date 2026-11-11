@@ -11,7 +11,11 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
   const next = safeNextPath((await searchParams).next, "/sites/new");
   if (await getCurrentUser()) redirect(next);
   return (
-    <AuthCard title="Create your account" subtitle="One account holds all your AppShelf licences and sites.">
+    <AuthCard
+      code="Form AS-01 · New account"
+      title="Create your account"
+      subtitle="One account holds all your AppShelf licences and sites."
+    >
       <AuthForm mode="signup" action={signUpAction} next={next} />
     </AuthCard>
   );

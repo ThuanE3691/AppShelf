@@ -19,7 +19,7 @@ export function AuthForm({
   const otherHref = `${isSignup ? "/login" : "/signup"}?next=${encodeURIComponent(next)}`;
 
   return (
-    <form action={formAction} className="space-y-5" noValidate>
+    <form action={formAction} className="space-y-6" noValidate>
       <input type="hidden" name="next" value={next} />
       <div>
         <label htmlFor="email" className="field-label">
@@ -34,6 +34,8 @@ export function AuthForm({
           defaultValue={state.email}
           className="field-input"
           placeholder="you@example.com"
+          aria-invalid={Boolean(state.error)}
+          aria-describedby={state.error ? "auth-error" : undefined}
         />
       </div>
       <div>
@@ -48,25 +50,26 @@ export function AuthForm({
           required
           minLength={isSignup ? 8 : undefined}
           className="field-input"
-          aria-describedby={isSignup ? "password-hint" : undefined}
+          aria-invalid={Boolean(state.error)}
+          aria-describedby={[isSignup ? "password-hint" : "", state.error ? "auth-error" : ""].join(" ").trim() || undefined}
         />
         {isSignup && (
-          <p id="password-hint" className="mt-1.5 text-xs text-slate-500">
+          <p id="password-hint" className="mt-2 text-sm text-ink-600">
             At least 8 characters. There is no email verification in this demo.
           </p>
         )}
       </div>
       {state.error && (
-        <p role="alert" className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800">
+        <p id="auth-error" role="alert" className="border-2 border-danger-700 bg-danger-100 px-3 py-2 text-sm font-medium text-danger-700">
           {state.error}
         </p>
       )}
-      <SubmitButton pendingLabel={isSignup ? "Creating account…" : "Signing in…"} className="btn btn-primary w-full py-3">
+      <SubmitButton pendingLabel={isSignup ? "Creating account…" : "Signing in…"} className="btn btn-primary w-full">
         {isSignup ? "Create account" : "Sign in"}
       </SubmitButton>
-      <p className="text-center text-sm text-slate-600">
+      <p className="border-t-2 border-ink-100 pt-5 text-sm text-ink-700">
         {isSignup ? "Already have an account?" : "New to AppShelf?"}{" "}
-        <Link href={otherHref} className="font-semibold text-brand-700 hover:underline">
+        <Link href={otherHref} className="text-link">
           {isSignup ? "Sign in" : "Create an account"}
         </Link>
       </p>

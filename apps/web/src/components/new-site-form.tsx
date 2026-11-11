@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import type { NewSiteFormState } from "@/app/actions/sites";
 import { TEMPLATES } from "@/lib/config";
 import { slugify, validateSlug } from "@/lib/slug-rules";
+import { Check } from "./icons";
 import { SubmitButton } from "./submit-button";
 
 type Availability = { state: "idle" | "checking" } | { state: "ok" } | { state: "error"; message: string };
@@ -57,14 +58,16 @@ export function NewSiteForm({
     state.fieldErrors?.slug ?? (effectiveSlug && availability.state === "error" ? availability.message : undefined);
 
   return (
-    <form action={formAction} className="space-y-8">
+    <form action={formAction} className="space-y-10">
       <fieldset>
-        <legend className="field-label">Template</legend>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          {TEMPLATES.map((t) => (
+        <legend className="field-label">01 · Template</legend>
+        <div className="mt-3 grid gap-0 border-2 border-ink-950 sm:grid-cols-3">
+          {TEMPLATES.map((t, i) => (
             <label
               key={t.id}
-              className="group relative flex cursor-pointer flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition has-[:checked]:border-brand-600 has-[:checked]:ring-2 has-[:checked]:ring-brand-100 hover:border-slate-300"
+              className={`group relative flex cursor-pointer flex-col bg-white p-4 transition-colors hover:bg-ink-100 has-[:checked]:bg-signal-500 has-[:focus-visible]:outline-3 has-[:focus-visible]:-outline-offset-6 has-[:focus-visible]:outline-ink-950 ${
+                i > 0 ? "border-t-2 border-ink-950 sm:border-t-0 sm:border-l-2" : ""
+              }`}
             >
               <input
                 type="radio"
@@ -74,15 +77,19 @@ export function NewSiteForm({
                 onChange={() => setTemplate(t.id)}
                 className="sr-only"
               />
-              <span className={`h-16 rounded-lg bg-gradient-to-br ${t.tone}`} aria-hidden />
-              <span className="mt-3 font-semibold">{t.name}</span>
-              <span className="text-xs text-slate-500">{t.tagline}</span>
-              <span
-                aria-hidden
-                className="absolute right-3 top-3 hidden h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-xs text-white group-has-[:checked]:flex"
-              >
-                ✓
+              <span className="flex items-center justify-between gap-2">
+                <span className="label text-ink-700 group-has-[:checked]:text-ink-950">
+                  Bin {t.bin} · {t.sku}
+                </span>
+                <span
+                  aria-hidden
+                  className="flex h-6 w-6 items-center justify-center border-2 border-ink-950 bg-white text-transparent group-has-[:checked]:bg-ink-950 group-has-[:checked]:text-signal-500"
+                >
+                  <Check />
+                </span>
               </span>
+              <span className="mt-6 text-lg font-bold">{t.name}</span>
+              <span className="mt-1 text-sm text-ink-700 group-has-[:checked]:text-ink-950">{t.tagline}</span>
             </label>
           ))}
         </div>
@@ -91,7 +98,7 @@ export function NewSiteForm({
 
       <div>
         <label htmlFor="title" className="field-label">
-          Site title
+          02 · Site title
         </label>
         <input
           id="title"
@@ -103,16 +110,21 @@ export function NewSiteForm({
           className="field-input"
           placeholder="Luna Bistro"
           aria-invalid={Boolean(state.fieldErrors?.title)}
+          aria-describedby={state.fieldErrors?.title ? "title-error" : undefined}
         />
-        {state.fieldErrors?.title && <p className="field-error">{state.fieldErrors.title}</p>}
+        {state.fieldErrors?.title && (
+          <p id="title-error" className="field-error">
+            {state.fieldErrors.title}
+          </p>
+        )}
       </div>
 
       <div>
         <label htmlFor="slug" className="field-label">
-          Site address
+          03 · Site address
         </label>
-        <div className="mt-1.5 flex rounded-lg shadow-sm">
-          <span className="inline-flex items-center rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 px-3 font-mono text-xs text-slate-500">
+        <div className="mt-2 flex border-2 border-ink-950 bg-white focus-within:shadow-[4px_4px_0_0_var(--color-signal-500)] has-[[aria-invalid=true]]:border-danger-700">
+          <span className="hidden items-center border-r-2 border-ink-950 bg-ink-100 px-3 font-mono text-xs text-ink-700 sm:inline-flex">
             {wpBaseUrl.replace(/^https?:\/\//, "")}/
           </span>
           <input
@@ -125,35 +137,51 @@ export function NewSiteForm({
               setSlugEdited(true);
               setSlug(e.target.value.toLowerCase());
             }}
-            className="block w-full min-w-0 rounded-r-lg border border-slate-300 px-3 py-2.5 font-mono text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none"
+            className="block min-h-11 w-full min-w-0 px-3 py-2.5 font-mono text-base placeholder:text-ink-400 focus:outline-none focus-visible:outline-3 focus-visible:-outline-offset-4 focus-visible:outline-ink-950"
             placeholder="luna-bistro"
-            aria-describedby="slug-status"
+            aria-describedby="slug-prefix slug-status"
             aria-invalid={Boolean(slugError)}
             spellCheck={false}
             autoCapitalize="off"
           />
         </div>
-        <p id="slug-status" aria-live="polite" className={slugError ? "field-error" : "mt-1.5 text-sm text-slate-500"}>
+        <p id="slug-prefix" className="mt-2 font-mono text-xs break-all text-ink-600 sm:hidden">
+          {wpBaseUrl.replace(/^https?:\/\//, "")}/{effectiveSlug || "your-address"}/
+        </p>
+        <p
+          id="slug-status"
+          aria-live="polite"
+          className={slugError ? "field-error" : "mt-2 flex items-center gap-1.5 text-sm text-ink-600"}
+        >
           {slugError ??
-            (availability.state === "checking"
-              ? "Checking…"
-              : availability.state === "ok" && effectiveSlug
-                ? "✓ Available"
-                : "Lowercase letters, numbers and hyphens. Filled in from the title.")}
+            (availability.state === "checking" ? (
+              "Checking…"
+            ) : availability.state === "ok" && effectiveSlug ? (
+              <>
+                <span className="flex h-4 w-4 items-center justify-center bg-ok-700 text-white">
+                  <Check className="h-3 w-3" />
+                </span>
+                <span className="font-medium text-ok-700">Available</span>
+              </>
+            ) : (
+              "Lowercase letters, numbers and hyphens. Filled in from the title."
+            ))}
         </p>
       </div>
 
       {state.error && (
-        <p role="alert" className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800">
+        <p role="alert" className="border-2 border-danger-700 bg-danger-100 px-3 py-2 text-sm font-medium text-danger-700">
           {state.error}
         </p>
       )}
 
-      <div className="flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-slate-600">
-          {priceLabel}/month, billed by Stripe in test mode. Use card <span className="font-mono">4242 4242 4242 4242</span>.
+      <div className="flex flex-col gap-4 border-t-2 border-ink-950 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-ink-700">
+          <span className="font-mono font-bold text-ink-950">{priceLabel}/month</span>, billed by Stripe in test mode.
+          <br />
+          Test card <span className="font-mono text-ink-950">4242 4242 4242 4242</span>.
         </p>
-        <SubmitButton pendingLabel="Opening Stripe…" className="btn btn-primary px-5 py-3">
+        <SubmitButton pendingLabel="Opening Stripe…" className="btn btn-primary">
           Continue to payment
         </SubmitButton>
       </div>
