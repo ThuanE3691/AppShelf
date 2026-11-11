@@ -75,7 +75,7 @@ jobs:
           done
 
   images:
-    name: Build images${{ github.event_name == 'push' && ' and publish' || '' }}
+    name: Build images (publish on main)
     needs: [node, infra]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
