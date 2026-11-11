@@ -1,0 +1,66 @@
+# Web app and local Stripe webhook forwarding. Merged after compose.yaml (and
+# wordpress/compose.yaml) by scripts/appshelf.ps1; relative paths resolve from
+# the repository root. Personal demo project: nothing restarts on its own.
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: "no"
+    mem_limit: 512m
+    env_file:
+      - "${APPSHELF_SECRETS_DIR:-.}/.secrets.local"
+      - "${APPSHELF_SECRETS_DIR:-.}/.env.local"
+    environment:
+      APP_URL: "${APP_URL:-http://app.appshelf.localhost}"
+      WP_PUBLIC_URL: "${WP_PUBLIC_URL:-http://wp.appshelf.localhost}"
+      # Written by stripe-cli. A real STRIPE_WEBHOOK_SECRET in .env.local wins over it.
+      STRIPE_WEBHOOK_SECRET_FILE: /run/stripe/webhook-secret
+    volumes:
+      - stripe_cli:/run/stripe:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+
+  # Forwards Stripe test-mode events to the web app while there is no public URL.
+  # The signing secret goes to a shared volume and is redacted from the logs.
+  stripe-cli:
+    image: stripe/stripe-cli:v1.55.10
+    restart: "no"
+    mem_limit: 64m
+    env_file:
+      - "${APPSHELF_SECRETS_DIR:-.}/.env.local"
+    environment:
+      STRIPE_FORWARD_EVENTS: >-
+        checkout.session.completed,checkout.session.async_payment_succeeded,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu -o pipefail
+        case "$${STRIPE_SECRET_KEY:-}" in
+          sk_test_*) ;;
+          *) echo "Refusing to start: STRIPE_SECRET_KEY must be a test-mode key (sk_test_...)." >&2; exit 1 ;;
+        esac
+        umask 022
+        stripe listen --api-key "$$STRIPE_SECRET_KEY" --print-secret > /run/stripe/webhook-secret.tmp
+        mv /run/stripe/webhook-secret.tmp /run/stripe/webhook-secret
+        echo "stripe-cli: webhook signing secret shared with web"
+        stripe listen --api-key "$$STRIPE_SECRET_KEY" \
+          --events "$$STRIPE_FORWARD_EVENTS" \
+          --forward-to http://web:3000/api/stripe/webhook 2>&1 \
+          | awk '{ gsub(/whsec_[A-Za-z0-9]+/, "whsec_[redacted]"); print; fflush() }'
+    volumes:
+      - stripe_cli:/run/stripe
+    depends_on:
+      web:
+        condition: service_started
+
+volumes:
+  stripe_cli:

@@ -1,0 +1,48 @@
+{
+  "name": "@appshelf/db",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Drizzle schema, SQL migrations and typed Postgres client for AppShelf.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./migrate": {
+      "types": "./src/migrate.ts",
+      "default": "./dist/migrate.js"
+    },
+    "./testing": {
+      "types": "./src/testing.ts",
+      "default": "./dist/testing.js"
+    }
+  },
+  "files": [
+    "dist",
+    "drizzle"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && esbuild src/migrate.ts --bundle --platform=node --format=esm --target=node24 --outfile=dist/migrate.bundle.mjs --banner:js=\"import { createRequire as __cr } from 'node:module'; const require = __cr(import.meta.url);\"",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node src/migrate.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:migrate:bundled": "node dist/migrate.bundle.mjs"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.4",
+    "postgres": "^3.4.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^24.10.0",
+    "drizzle-kit": "0.31.11",
+    "esbuild": "^0.25.12",
+    "eslint": "^9.39.5",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "5.1.0"
+  }
+}
