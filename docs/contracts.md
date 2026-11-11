@@ -23,35 +23,53 @@ npm workspaces (`apps/*`, `packages/*`), Node 24, TypeScript strict.
 
 Compose files are merged with `-f` in this order (see `scripts/appshelf.ps1`):
 `compose.yaml`, `wordpress/compose.yaml`, `apps/web/compose.yaml`,
-`apps/worker/compose.yaml`, and `infra/tunnel.compose.yaml` only when a tunnel
-token exists. The project name is `appshelf`.
+`apps/worker/compose.yaml`, `infra/images.compose.yaml` (GHCR image names for
+the services built here), and `infra/tunnel.compose.yaml` only when
+`.secrets.local` holds `TUNNEL_TOKEN`. The project name is `appshelf`.
+
+`appshelf up` pulls the GHCR images and starts without building;
+`appshelf up --build` builds the same services locally. CI publishes
+`ghcr.io/thuane3691/appshelf-{web,wordpress,worker}` tagged `latest` and the
+commit SHA on every push to `main` (`.github/workflows/ci.yml`,
+`infra/docker-bake.hcl`); `APPSHELF_IMAGE_TAG` selects a SHA.
 
 | Service | Image | Internal address | Notes |
 |---|---|---|---|
 | `postgres` | `postgres:17-alpine` | `postgres:5432` | DB `appshelf` |
 | `mariadb` | `mariadb:11` | `mariadb:3306` | DB `wordpress` |
-| `wordpress` | built from `wordpress/` | `wordpress:80` | Multisite, subdirectory |
-| `wp-init` | built from `wordpress/` | one-shot | installs network + templates, idempotent |
-| `web` | built from `apps/web/` | `web:3000` | Next.js standalone |
-| `stripe-cli` | `stripe/stripe-cli` | none | forwards webhooks when no public URL |
-| `worker` | built from `apps/worker/` | none | Node + wp-cli, mounts `wp_data` |
+| `wordpress` | `ghcr.io/thuane3691/appshelf-wordpress`, built from `wordpress/` | `wordpress:80` | Multisite, subdirectory |
+| `wp-init` | same image as `wordpress` | one-shot | installs network + templates, idempotent |
+| `web` | `ghcr.io/thuane3691/appshelf-web`, built from `apps/web/` | `web:3000` | Next.js standalone |
+| `stripe-cli` | `stripe/stripe-cli` | none | forwards webhooks; not started once the tunnel and its webhook exist |
+| `worker` | `ghcr.io/thuane3691/appshelf-worker`, built from `apps/worker/` | none | Node + wp-cli, mounts `wp_data` |
 | `edge` | `caddy:2-alpine` | host `127.0.0.1:80` | local hostnames only |
-| `cloudflared` | `cloudflare/cloudflared` | none | public hostnames, optional |
+| `cloudflared` | `cloudflare/cloudflared` (pinned) | none | public hostnames, outbound-only, optional |
 
 Volumes: `pg_data`, `db_data`, `wp_data` (mounted at `/var/www/html` in
 `wordpress`, `wp-init` and `worker`).
 
 Hostnames. Local: `app.appshelf.localhost` and `wp.appshelf.localhost`
 (served by `edge`). Public, once a domain exists: `app.<CF_ZONE>` and
-`wp.<CF_ZONE>` (served by `cloudflared`). Config variables:
-`APP_URL` (default `http://app.appshelf.localhost`) and `WP_DOMAIN`
-(default `wp.appshelf.localhost`). WordPress sites live at
-`https://<WP_DOMAIN>/<slug>/`.
+`wp.<CF_ZONE>` (served by `cloudflared` through the remotely-managed tunnel
+`appshelf`, whose ingress is `app.<CF_ZONE>` → `http://web:3000` and
+`wp.<CF_ZONE>` → `http://wordpress:80`). Config variables:
+`APP_URL` (default `http://app.appshelf.localhost`), `WP_DOMAIN`
+(default `wp.appshelf.localhost`), `WP_PUBLIC_URL` (default
+`http://wp.appshelf.localhost`) and `WP_SCHEME` (default `http`). WordPress
+sites live at `<WP_SCHEME>://<WP_DOMAIN>/<slug>/`. `appshelf tunnel` stores the
+public values in `.secrets.local` and the script exports them for Compose
+interpolation; `appshelf set-domain` moves an installed network to `WP_DOMAIN`
+(backup in `backups/` first).
 
-Secrets. User-supplied secrets are in `.env.local` (Cloudflare and Stripe test
-keys). Generated secrets are in `.secrets.local`, created by
+Secrets. User-supplied secrets are in `.env.local`: `STRIPE_SECRET_KEY`,
+`STRIPE_PUBLISHABLE_KEY` (test mode), `CLOUDFLARE_API_TOKEN`,
+`CLOUDFLARE_ACCOUNT_ID` and `CF_ZONE` (empty until a domain exists). Generated
+secrets are in `.secrets.local`, created by
 `scripts/appshelf.ps1` when missing: `POSTGRES_PASSWORD`, `MARIADB_PASSWORD`,
-`MARIADB_ROOT_PASSWORD`, `SESSION_SECRET`, `WP_NETWORK_ADMIN_PASSWORD`.
+`MARIADB_ROOT_PASSWORD`, `SESSION_SECRET`, `WP_NETWORK_ADMIN_PASSWORD`; plus,
+written by `appshelf tunnel`: `TUNNEL_TOKEN`, `STRIPE_WEBHOOK_SECRET` (the
+public Stripe test webhook endpoint), `APP_URL`, `WP_DOMAIN`, `WP_PUBLIC_URL`,
+`WP_SCHEME`.
 Both files are gitignored and loaded by Compose through
 `env_file: ["${APPSHELF_SECRETS_DIR:-.}/<file>"]`; from a git worktree set
 `APPSHELF_SECRETS_DIR=D:/Works/Upworks/projects/appshelf` so the main
