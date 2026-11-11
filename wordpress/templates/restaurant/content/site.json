@@ -1,0 +1,30 @@
+{
+	"tagline": "Wood-fired kitchen and bar. Seasonal plates, natural wine, open Tuesday to Sunday.",
+	"pages": [
+		{
+			"slug": "home",
+			"title": "Home",
+			"file": "home.html",
+			"front": true,
+			"description": "{{site_title}} is a wood-fired neighbourhood kitchen and bar serving seasonal plates from local farms. Book a table or walk in at the bar."
+		},
+		{
+			"slug": "menu",
+			"title": "Menu",
+			"file": "menu.html",
+			"description": "This week's menu at {{site_title}}: small plates, dishes from the wood fire, sides and desserts, with vegetarian options every day."
+		},
+		{
+			"slug": "our-story",
+			"title": "Our story",
+			"file": "our-story.html",
+			"description": "How {{site_title}} started: one wood-burning hearth, a handful of local growers and a kitchen that cooks what the season brings."
+		},
+		{
+			"slug": "visit",
+			"title": "Visit",
+			"file": "visit.html",
+			"description": "Opening hours, address, reservations and private dining at {{site_title}}. Walk-ins are welcome at the bar."
+		}
+	]
+}

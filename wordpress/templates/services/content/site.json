@@ -1,0 +1,30 @@
+{
+	"tagline": "Licensed plumbing, electrical, carpentry and painting in Port Alder. Upfront prices, 2-year guarantee.",
+	"pages": [
+		{
+			"slug": "home",
+			"title": "Home",
+			"file": "home.html",
+			"front": true,
+			"description": "{{site_title}} fixes leaks, wiring, doors, walls and appliances across Port Alder. Licensed and insured, upfront prices, free quotes."
+		},
+		{
+			"slug": "services",
+			"title": "Services",
+			"file": "services.html",
+			"description": "Plumbing, electrical, carpentry, painting, appliance installs and small renovations from {{site_title}}, with what is included and starting prices."
+		},
+		{
+			"slug": "about",
+			"title": "About",
+			"file": "about.html",
+			"description": "Meet the {{site_title}} crew: licensed tradespeople serving Port Alder since 2013, with a 2-year workmanship guarantee on every job."
+		},
+		{
+			"slug": "contact",
+			"title": "Contact",
+			"file": "contact.html",
+			"description": "Request a free quote from {{site_title}}. Call or email us, check our opening hours and 24/7 emergency call-outs, and read common questions."
+		}
+	]
+}

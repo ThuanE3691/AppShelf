@@ -1,0 +1,30 @@
+{
+	"tagline": "Independent brand and web design studio in Port Alder. Identity, websites, product and content design.",
+	"pages": [
+		{
+			"slug": "home",
+			"title": "Home",
+			"file": "home.html",
+			"front": true,
+			"description": "{{site_title}} is an eight-person brand and web design studio in Port Alder, making identities, websites and products people remember and use."
+		},
+		{
+			"slug": "work",
+			"title": "Work",
+			"file": "work.html",
+			"description": "Selected case studies from {{site_title}}: identities, websites and product design for a bakery chain, a climate startup, a library and a bike maker."
+		},
+		{
+			"slug": "studio",
+			"title": "Studio",
+			"file": "studio.html",
+			"description": "Meet {{site_title}}: eight designers, writers and developers in Port Alder. How we work, what we value and who you will sit across the table from."
+		},
+		{
+			"slug": "contact",
+			"title": "Contact",
+			"file": "contact.html",
+			"description": "Start a project with {{site_title}}: how we work from first email to launch, typical budgets from $8k, and where to find the studio in Port Alder."
+		}
+	]
+}
