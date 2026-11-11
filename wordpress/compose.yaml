@@ -14,7 +14,7 @@ services:
       WORDPRESS_DB_HOST: mariadb:3306
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wordpress
-      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD:?MARIADB_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
       WP_DOMAIN: ${WP_DOMAIN:-wp.appshelf.localhost}
     volumes:
       - wp_data:/var/www/html
@@ -39,8 +39,8 @@ services:
       WORDPRESS_DB_HOST: mariadb:3306
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wordpress
-      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
-      WP_NETWORK_ADMIN_PASSWORD: ${WP_NETWORK_ADMIN_PASSWORD}
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD:?MARIADB_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
+      WP_NETWORK_ADMIN_PASSWORD: ${WP_NETWORK_ADMIN_PASSWORD:?WP_NETWORK_ADMIN_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
       WP_DOMAIN: ${WP_DOMAIN:-wp.appshelf.localhost}
       WP_SCHEME: ${WP_SCHEME:-http}
     volumes:

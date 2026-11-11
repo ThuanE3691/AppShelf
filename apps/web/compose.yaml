@@ -10,8 +10,8 @@ services:
     restart: "no"
     mem_limit: 512m
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?STRIPE_SECRET_KEY is not set; start the stack with scripts/appshelf.ps1}
       # Set by `appshelf tunnel` (public webhook); empty while stripe-cli forwards.
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       APP_URL: "${APP_URL:-http://app.appshelf.localhost}"
@@ -37,7 +37,7 @@ services:
     restart: "no"
     mem_limit: 64m
     environment:
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?STRIPE_SECRET_KEY is not set; start the stack with scripts/appshelf.ps1}
       STRIPE_FORWARD_EVENTS: >-
         checkout.session.completed,checkout.session.async_payment_succeeded,customer.subscription.created,customer.subscription.updated,customer.subscription.deleted
     entrypoint: ["/bin/sh", "-c"]

@@ -73,7 +73,9 @@ public Stripe test webhook endpoint), `APP_URL`, `WP_DOMAIN`, `WP_PUBLIC_URL`,
 `WP_SCHEME`.
 Both files are gitignored. `scripts/appshelf.ps1` passes them to Compose with
 `--env-file`, and each service maps only the variables it needs through
-`environment: { NAME: ${NAME} }`; no service loads a whole secrets file:
+`environment: { NAME: ${NAME:?...} }`, so a plain `docker compose` call without
+the secrets stops instead of starting with empty passwords; no service loads a
+whole secrets file:
 
 | Service | Secrets it receives |
 |---|---|

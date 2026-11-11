@@ -62,8 +62,12 @@ jobs:
         run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
       - name: docker compose config
         run: |
-          # Compose refuses missing env_file paths; CI has no secrets, so use empty files.
-          touch .secrets.local .env.local
+          # Required secrets use ${VAR:?}, so Compose stops when one is missing.
+          # CI has no secrets: validate with dummy values.
+          for v in POSTGRES_PASSWORD MARIADB_PASSWORD MARIADB_ROOT_PASSWORD \
+                   WP_NETWORK_ADMIN_PASSWORD STRIPE_SECRET_KEY TUNNEL_TOKEN; do
+            export "$v=ci-dummy"
+          done
           base=(-f compose.yaml -f wordpress/compose.yaml -f apps/web/compose.yaml)
           if [ -f apps/worker/compose.yaml ]; then base+=(-f apps/worker/compose.yaml); fi
           # Every combination scripts/appshelf.ps1 can pass.

@@ -14,7 +14,7 @@ services:
     environment:
       POSTGRES_DB: appshelf
       POSTGRES_USER: appshelf
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
@@ -30,8 +30,8 @@ services:
     environment:
       MARIADB_DATABASE: wordpress
       MARIADB_USER: wordpress
-      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
-      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:?MARIADB_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?MARIADB_ROOT_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:

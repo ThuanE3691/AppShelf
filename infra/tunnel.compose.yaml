@@ -12,7 +12,7 @@ services:
     # cloudflared reads the token from TUNNEL_TOKEN, so it never appears in argv.
     command: ["tunnel", "--no-autoupdate", "run"]
     environment:
-      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?TUNNEL_TOKEN is not set; start the stack with scripts/appshelf.ps1}
     depends_on:
       web:
         condition: service_started

@@ -1,7 +1,7 @@
 // The real handlers calling the real WordPress scripts against the running
 // multisite (no fakes). Runs inside the worker test image, which has wp-cli,
 // the scripts and the wp_data volume:
-//   docker compose -p appshelf ... run --rm worker-test
+//   pwsh scripts/appshelf.ps1 dc --profile test run --rm --build worker-test
 import { enqueueJob, licenses, sites, type Site } from "@appshelf/db";
 import { eq } from "drizzle-orm";
 import { execFile } from "node:child_process";

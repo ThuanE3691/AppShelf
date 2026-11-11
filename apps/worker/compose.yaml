@@ -9,9 +9,9 @@ x-worker-env: &worker-env
   WORDPRESS_DB_HOST: mariadb:3306
   WORDPRESS_DB_NAME: wordpress
   WORDPRESS_DB_USER: wordpress
-  WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
+  WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD:?MARIADB_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
   WP_DOMAIN: ${WP_DOMAIN:-wp.appshelf.localhost}
-  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
 
 services:
   worker:
@@ -26,7 +26,7 @@ services:
     stop_grace_period: 60s
     environment:
       <<: *worker-env
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?STRIPE_SECRET_KEY is not set; start the stack with scripts/appshelf.ps1}
     volumes:
       - wp_data:/var/www/html
     depends_on:
@@ -37,8 +37,9 @@ services:
 
   # Vitest inside the worker image against the running stack: queue tests plus the
   # handlers calling the real WordPress scripts. Uses its own database
-  # (appshelf_worker_test), never the app database. Only runs on demand:
-  #   docker compose -p appshelf ... run --rm worker-test
+  # (appshelf_worker_test), never the app database. Only runs on demand, through
+  # the script so the secrets are passed to Compose:
+  #   pwsh scripts/appshelf.ps1 dc --profile test run --rm --build worker-test
   worker-test:
     profiles: ["test"]
     build:
