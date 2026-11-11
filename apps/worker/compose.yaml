@@ -1,0 +1,64 @@
+# Job worker. Merged after compose.yaml, wordpress/compose.yaml and
+# apps/web/compose.yaml by scripts/appshelf.ps1; relative paths resolve from the
+# repository root. Personal demo project: nothing restarts on its own.
+
+x-worker-env: &worker-env
+  # Same WordPress settings as the wordpress and wp-init services; lib.sh maps
+  # MARIADB_PASSWORD (from .secrets.local) to WORDPRESS_DB_PASSWORD.
+  WORDPRESS_DB_HOST: mariadb:3306
+  WORDPRESS_DB_NAME: wordpress
+  WORDPRESS_DB_USER: wordpress
+  WP_DOMAIN: ${WP_DOMAIN:-wp.appshelf.localhost}
+
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+      target: runtime
+    image: appshelf-worker:local
+    restart: "no"
+    mem_limit: 384m
+    # A running site script finishes before the worker exits (scripts take < 20 s).
+    stop_grace_period: 60s
+    env_file:
+      - "${APPSHELF_SECRETS_DIR:-.}/.secrets.local"
+      - "${APPSHELF_SECRETS_DIR:-.}/.env.local"
+    environment: *worker-env
+    volumes:
+      - wp_data:/var/www/html
+    depends_on:
+      postgres:
+        condition: service_healthy
+      wp-init:
+        condition: service_completed_successfully
+
+  # Vitest inside the worker image against the running stack: queue tests plus the
+  # handlers calling the real WordPress scripts. Uses its own database
+  # (appshelf_worker_test), never the app database. Only runs on demand:
+  #   docker compose -p appshelf ... run --rm worker-test
+  worker-test:
+    profiles: ["test"]
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+      target: test
+    image: appshelf-worker:test
+    restart: "no"
+    mem_limit: 768m
+    env_file:
+      - "${APPSHELF_SECRETS_DIR:-.}/.secrets.local"
+    environment:
+      <<: *worker-env
+      WP_INTERNAL_URL: http://wordpress
+    command:
+      - sh
+      - -c
+      - TEST_DATABASE_URL="postgres://appshelf:$${POSTGRES_PASSWORD}@postgres:5432/appshelf_worker_test" exec npm test -w @appshelf/worker
+    volumes:
+      - wp_data:/var/www/html
+    depends_on:
+      postgres:
+        condition: service_healthy
+      wp-init:
+        condition: service_completed_successfully
