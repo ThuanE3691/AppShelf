@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, Consolas, monospace;
+  --color-ink: #0f172a;
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: #f8fafc;
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700;
+  }
+  .btn-secondary {
+    @apply border border-slate-300 bg-white text-slate-800 hover:bg-slate-50;
+  }
+  .btn-danger {
+    @apply border border-rose-200 bg-white text-rose-700 hover:bg-rose-50;
+  }
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+  .field-label {
+    @apply block text-sm font-medium text-slate-800;
+  }
+  .field-input {
+    @apply mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none;
+  }
+  .field-error {
+    @apply mt-1.5 text-sm text-rose-700;
+  }
+}
