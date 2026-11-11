@@ -7,7 +7,7 @@ services:
     image: postgres:17-alpine
     restart: "no"
     mem_limit: 256m
-    env_file: [.secrets.local]
+    env_file: ["${APPSHELF_SECRETS_DIR:-.}/.secrets.local"]
     environment:
       POSTGRES_DB: appshelf
       POSTGRES_USER: appshelf
@@ -23,7 +23,7 @@ services:
     image: mariadb:11
     restart: "no"
     mem_limit: 384m
-    env_file: [.secrets.local]
+    env_file: ["${APPSHELF_SECRETS_DIR:-.}/.secrets.local"]
     environment:
       MARIADB_DATABASE: wordpress
       MARIADB_USER: wordpress

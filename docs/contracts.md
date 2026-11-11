@@ -52,7 +52,10 @@ Secrets. User-supplied secrets are in `.env.local` (Cloudflare and Stripe test
 keys). Generated secrets are in `.secrets.local`, created by
 `scripts/appshelf.ps1` when missing: `POSTGRES_PASSWORD`, `MARIADB_PASSWORD`,
 `MARIADB_ROOT_PASSWORD`, `SESSION_SECRET`, `WP_NETWORK_ADMIN_PASSWORD`.
-Both files are gitignored and loaded by Compose through `env_file`. Never print
+Both files are gitignored and loaded by Compose through
+`env_file: ["${APPSHELF_SECRETS_DIR:-.}/<file>"]`; from a git worktree set
+`APPSHELF_SECRETS_DIR=D:/Works/Upworks/projects/appshelf` so the main
+checkout's files are used (never copy them). Never print
 their values. Code must refuse a Stripe secret key that does not start with
 `sk_test_`.
 
