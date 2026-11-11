@@ -9,14 +9,13 @@ import { canCancel, canRenew, getOwnedSite } from "@/lib/dashboard";
 import { cancelLicenseSubscriptions } from "@/lib/lifecycle";
 import { getWordPressProduct } from "@/lib/products";
 import { checkSlug } from "@/lib/slug";
+import { validateTitle } from "@/lib/site-title";
 
 export interface NewSiteFormState {
   error?: string;
   fieldErrors?: Partial<Record<"template" | "title" | "slug", string>>;
   values?: { template?: string; title?: string; slug?: string };
 }
-
-const TITLE_MAX = 60;
 
 async function requireUser(next: string) {
   const user = await getCurrentUser();
@@ -27,16 +26,21 @@ async function requireUser(next: string) {
 export async function startSiteCheckoutAction(_prev: NewSiteFormState, formData: FormData): Promise<NewSiteFormState> {
   const user = await requireUser("/sites/new");
   const template = String(formData.get("template") ?? "");
-  const title = String(formData.get("title") ?? "").trim();
-  const values = { template, title, slug: String(formData.get("slug") ?? "") };
+  const values = {
+    template,
+    title: String(formData.get("title") ?? "").trim(),
+    slug: String(formData.get("slug") ?? ""),
+  };
 
   const fieldErrors: NewSiteFormState["fieldErrors"] = {};
   if (!isTemplate(template)) fieldErrors.template = "Pick one of the three templates.";
-  if (!title) fieldErrors.title = "Give your site a title.";
-  else if (title.length > TITLE_MAX) fieldErrors.title = `Keep the title under ${TITLE_MAX} characters.`;
+  const title = validateTitle(values.title);
+  if (!title.ok) fieldErrors.title = title.error;
   const slug = await checkSlug(getDb(), values.slug);
   if (!slug.ok) fieldErrors.slug = slug.error;
-  if (Object.keys(fieldErrors).length > 0 || !isTemplate(template) || !slug.ok) return { fieldErrors, values };
+  if (Object.keys(fieldErrors).length > 0 || !isTemplate(template) || !title.ok || !slug.ok) {
+    return { fieldErrors, values };
+  }
 
   const product = await getWordPressProduct();
   if (!product?.active || !product.stripePriceId) {
@@ -45,7 +49,7 @@ export async function startSiteCheckoutAction(_prev: NewSiteFormState, formData:
 
   let checkoutUrl: string;
   try {
-    checkoutUrl = await createSiteCheckout({ user, product, template, title, slug: slug.slug });
+    checkoutUrl = await createSiteCheckout({ user, product, template, title: title.title, slug: slug.slug });
   } catch (error) {
     console.error("create checkout failed", error);
     return { error: "Could not start Stripe Checkout. Please try again.", values };
