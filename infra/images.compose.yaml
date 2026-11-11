@@ -1,0 +1,16 @@
+# Image names for the services AppShelf builds itself. Merged after the service
+# compose files by scripts/appshelf.ps1, so the same services can either be
+# pulled from GHCR (`appshelf up`) or built locally (`appshelf up --build`,
+# which tags the local build with these names). CI publishes them on every
+# push to main (.github/workflows/ci.yml), tagged `latest` and the commit SHA.
+# Set APPSHELF_IMAGE_TAG to a commit SHA to run an older build.
+
+services:
+  web:
+    image: ghcr.io/thuane3691/appshelf-web:${APPSHELF_IMAGE_TAG:-latest}
+  wordpress:
+    image: ghcr.io/thuane3691/appshelf-wordpress:${APPSHELF_IMAGE_TAG:-latest}
+  wp-init:
+    image: ghcr.io/thuane3691/appshelf-wordpress:${APPSHELF_IMAGE_TAG:-latest}
+  worker:
+    image: ghcr.io/thuane3691/appshelf-worker:${APPSHELF_IMAGE_TAG:-latest}
