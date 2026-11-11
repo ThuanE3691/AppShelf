@@ -1,0 +1,19 @@
+# Build context is the repo root; send only what the web image needs.
+**/node_modules
+**/.next
+**/dist
+**/bundle
+**/coverage
+**/*.tsbuildinfo
+**/next-env.d.ts
+.git
+.github
+.env*
+.secrets.local
+wordpress
+infra
+plans
+docs
+tests
+**/playwright-report
+**/test-results
