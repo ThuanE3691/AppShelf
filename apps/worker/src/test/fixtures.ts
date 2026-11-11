@@ -14,6 +14,7 @@ import {
   type Subscription,
 } from "@appshelf/db";
 import { testDatabaseUrl, truncateAll } from "@appshelf/db/testing";
+import { eq } from "drizzle-orm";
 import { silentLogger } from "../log.js";
 
 export const log = silentLogger;
@@ -77,6 +78,8 @@ export async function createSiteFixture(
     })
     .returning();
   if (!license) throw new Error("fixture insert failed");
+  await db.update(subscriptions).set({ licenseId: license.id }).where(eq(subscriptions.id, subscription.id));
+  subscription.licenseId = license.id;
   const slug = overrides.site?.slug ?? uniqueSlug();
   const [site] = await db
     .insert(sites)

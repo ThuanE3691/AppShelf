@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { createRenewCheckout, createSiteCheckout } from "@/lib/checkout";
 import { isTemplate } from "@/lib/config";
 import { canCancel, canRenew, getOwnedSite } from "@/lib/dashboard";
-import { cancelSubscriptionNow } from "@/lib/lifecycle";
+import { cancelLicenseSubscriptions } from "@/lib/lifecycle";
 import { getWordPressProduct } from "@/lib/products";
 import { checkSlug } from "@/lib/slug";
 
@@ -63,7 +63,7 @@ export async function cancelPlanAction(_prev: SiteActionState, formData: FormDat
   if (!entry || !canCancel(entry) || !entry.subscription) return { error: "This plan cannot be cancelled." };
 
   try {
-    await cancelSubscriptionNow(entry.subscription.stripeSubscriptionId);
+    await cancelLicenseSubscriptions(entry.license.id);
   } catch (error) {
     console.error("cancel subscription failed", error);
     return { error: "Stripe could not cancel the plan. Please try again." };

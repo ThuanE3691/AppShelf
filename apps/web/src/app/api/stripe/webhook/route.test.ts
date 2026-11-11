@@ -1,11 +1,12 @@
 import { getDb, sites, stripeEvents } from "@appshelf/db";
-import { describe, expect, it } from "vitest";
-import { processStripeEvent } from "@/lib/lifecycle";
+import { describe, expect, it, vi } from "vitest";
+import { cancelLicenseSubscriptions, processStripeEvent } from "@/lib/lifecycle";
 import {
   checkoutCompletedEvent,
   deliver,
   seedUserAndProduct,
   snapshot,
+  stubStripeSubscriptions,
   subscriptionEvent,
   withCleanDatabase,
 } from "@/test/fixtures";
@@ -139,6 +140,61 @@ describe("POST /api/stripe/webhook", () => {
     const final = await snapshot();
     expect(final.licenses[0]).toMatchObject({ status: "active" });
     expect(final.jobs).toHaveLength(3);
+  });
+
+  it("two paid renewals: the replaced subscription is cancelled and Cancel plan stops the other", async () => {
+    const { user, product } = await completeNewSite();
+    await deliver(subscriptionEvent("customer.subscription.deleted", { subscriptionId: "sub_first", status: "canceled" }));
+    const { licenses: [license], sites: [site] } = await snapshot();
+    const renewMeta = { kind: "renew", userId: user.id, productId: product.id, licenseId: license!.id, siteId: site!.id };
+    const stripe = stubStripeSubscriptions({ sub_renew_a: "active", sub_renew_b: "active" });
+
+    // Renew opened in two tabs and paid in both.
+    const sessionA = checkoutCompletedEvent({ subscriptionId: "sub_renew_a", metadata: renewMeta });
+    await deliver(sessionA);
+    expect(stripe.canceled).toEqual([]);
+    await deliver(checkoutCompletedEvent({ subscriptionId: "sub_renew_b", metadata: renewMeta }));
+    expect(stripe.canceled).toEqual(["sub_renew_a"]);
+
+    let state = await snapshot();
+    const byStripeId = (id: string) => state.subscriptions.find((s) => s.stripeSubscriptionId === id)!;
+    expect(byStripeId("sub_renew_a")).toMatchObject({ status: "canceled", licenseId: license!.id });
+    expect(byStripeId("sub_renew_b")).toMatchObject({ status: "active", licenseId: license!.id });
+    expect(state.licenses[0]).toMatchObject({ status: "active", subscriptionId: byStripeId("sub_renew_b").id });
+
+    // A replay of the first session (success page reload) does not take the license back.
+    await deliver(checkoutCompletedEvent({ subscriptionId: "sub_renew_a", metadata: renewMeta }));
+    state = await snapshot();
+    expect(state.licenses[0]).toMatchObject({ status: "active", subscriptionId: byStripeId("sub_renew_b").id });
+    expect(stripe.canceled).toEqual(["sub_renew_a"]);
+
+    // Cancel plan leaves nothing billing.
+    await cancelLicenseSubscriptions(license!.id);
+    expect(stripe.canceled).toEqual(["sub_renew_a", "sub_renew_b"]);
+    state = await snapshot();
+    expect(state.subscriptions.every((s) => s.status === "canceled")).toBe(true);
+    expect(state.licenses[0]).toMatchObject({ status: "inactive" });
+    expect(state.jobs.at(-1)).toMatchObject({ type: "site.archive", payload: { siteId: site!.id } });
+  });
+
+  it("Cancel plan also stops a replaced subscription the renewal could not cancel", async () => {
+    const { user, product } = await completeNewSite();
+    const { licenses: [license], sites: [site] } = await snapshot();
+    const renewMeta = { kind: "renew", userId: user.id, productId: product.id, licenseId: license!.id, siteId: site!.id };
+    // The first subscription still bills (renewed early) and Stripe refuses to cancel it this time.
+    const failing = stubStripeSubscriptions({ sub_first: "active", sub_renewed: "active" }, ["sub_first"]);
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect((await deliver(checkoutCompletedEvent({ subscriptionId: "sub_renewed", metadata: renewMeta }))).status).toBe(200);
+    expect(failing.canceled).toEqual([]);
+    expect(logged).toHaveBeenCalledWith(expect.stringContaining("could not cancel a replaced subscription"), expect.any(Error));
+    vi.restoreAllMocks();
+
+    const stripe = stubStripeSubscriptions({ sub_first: "active", sub_renewed: "active" });
+    await cancelLicenseSubscriptions(license!.id);
+    expect(stripe.canceled.sort()).toEqual(["sub_first", "sub_renewed"]);
+    const state = await snapshot();
+    expect(state.subscriptions.every((s) => s.status === "canceled")).toBe(true);
+    expect(state.licenses[0]).toMatchObject({ status: "inactive" });
   });
 
   it("subscription.created before checkout.completed still provisions once", async () => {

@@ -94,6 +94,38 @@ describe("subscription cancellation", () => {
     expect(calls).toHaveLength(1);
   });
 
+  it("after two renewals cancels the replaced subscription now and the current one at expiry", async () => {
+    const fixture = await createSiteFixture(db, { site: { status: "active" }, subscriptionStatus: "canceled" });
+    const renewal = (stripeSubscriptionId: string) =>
+      db
+        .insert(subscriptions)
+        .values({
+          userId: fixture.site.userId,
+          productId: fixture.subscription.productId,
+          stripeSubscriptionId,
+          status: "active",
+          licenseId: fixture.license.id,
+        })
+        .returning()
+        .then((rows) => rows[0]!);
+    // Renew paid in two tabs: the license ends up on the second subscription.
+    await renewal("sub_renew_first");
+    const second = await renewal("sub_renew_second");
+    await db.update(licenses).set({ subscriptionId: second.id }).where(eq(licenses.id, fixture.license.id));
+    const { calls, canceller } = recordingCanceller();
+
+    await runExpiryPass(db, canceller, log);
+    expect(calls).toEqual(["sub_renew_first"]);
+    await runExpiryPass(db, canceller, log);
+    expect(calls).toEqual(["sub_renew_first"]);
+
+    await db.update(sites).set({ expiresAt: past() }).where(eq(sites.id, fixture.site.id));
+    await runExpiryPass(db, canceller, log);
+    expect(calls).toEqual(["sub_renew_first", "sub_renew_second"]);
+    const billing = await db.select().from(subscriptions).where(eq(subscriptions.status, "active"));
+    expect(billing).toEqual([]);
+  });
+
   it("keeps the subscription for the next pass when Stripe fails", async () => {
     const { subscription } = await createSiteFixture(db, { site: { status: "active", expiresAt: past() } });
     const down = recordingCanceller(true);

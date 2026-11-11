@@ -2,6 +2,7 @@
 // the webhook, the checkout success page and the dashboard may all apply the
 // same Stripe object, in any order and more than once.
 import {
+  BILLABLE_SUBSCRIPTION_STATUSES,
   enqueueJob,
   getDb,
   licenses,
@@ -12,7 +13,7 @@ import {
   type Executor,
   type Subscription,
 } from "@appshelf/db";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, ne, or, sql } from "drizzle-orm";
 import type Stripe from "stripe";
 import { isTemplate, siteUrl, SITE_LIFETIME_MS } from "./config";
 import { getStripe } from "./stripe";
@@ -29,7 +30,8 @@ export type EventOutcome = "processed" | "ignored" | "duplicate";
 
 /** Applies one verified webhook event exactly once (stripe_events is the guard). */
 export async function processStripeEvent(event: Stripe.Event, db: Database = getDb()): Promise<EventOutcome> {
-  return db.transaction(async (tx) => {
+  let renewedLicenseId: string | null = null;
+  const outcome = await db.transaction(async (tx): Promise<EventOutcome> => {
     const inserted = await tx
       .insert(stripeEvents)
       .values({ id: event.id, type: event.type })
@@ -40,7 +42,7 @@ export async function processStripeEvent(event: Stripe.Event, db: Database = get
     switch (event.type) {
       case "checkout.session.completed":
       case "checkout.session.async_payment_succeeded":
-        await applyCheckoutSession(tx, event.data.object);
+        renewedLicenseId = await applyCheckoutSession(tx, event.data.object);
         return "processed";
       case "customer.subscription.created":
       case "customer.subscription.updated":
@@ -51,19 +53,76 @@ export async function processStripeEvent(event: Stripe.Event, db: Database = get
         return "ignored";
     }
   });
+  if (renewedLicenseId) await cancelReplacedSubscriptions(renewedLicenseId, db);
+  return outcome;
 }
 
 /** Success-page fallback: read the session from Stripe and apply rule 1 or 3. */
 export async function syncCheckoutSession(sessionId: string, db: Database = getDb()) {
   const session = await getStripe().checkout.sessions.retrieve(sessionId, { expand: ["subscription"] });
-  await db.transaction((tx) => applyCheckoutSession(tx, session));
+  const renewedLicenseId = await db.transaction((tx) => applyCheckoutSession(tx, session));
+  if (renewedLicenseId) await cancelReplacedSubscriptions(renewedLicenseId, db);
   return session;
 }
 
-/** Dashboard "Cancel plan": cancel now in Stripe and apply rule 2 without waiting for the webhook. */
-export async function cancelSubscriptionNow(stripeSubscriptionId: string, db: Database = getDb()) {
-  const subscription = await getStripe().subscriptions.cancel(stripeSubscriptionId);
-  await db.transaction((tx) => applySubscription(tx, subscription));
+type BillableRow = { id: string; stripeSubscriptionId: string };
+
+const isBillable = () => inArray(subscriptions.status, [...BILLABLE_SUBSCRIPTION_STATUSES]);
+
+/** Cancels each subscription in Stripe (test key only) and applies the result; returns the failures. */
+async function cancelInStripe(rows: BillableRow[], db: Database): Promise<unknown[]> {
+  const stripe = getStripe();
+  const errors: unknown[] = [];
+  for (const row of rows) {
+    try {
+      let subscription = await stripe.subscriptions.retrieve(row.stripeSubscriptionId);
+      if (subscription.status !== "canceled" && subscription.status !== "incomplete_expired") {
+        subscription = await stripe.subscriptions.cancel(row.stripeSubscriptionId);
+      }
+      const ended = subscription;
+      await db.transaction((tx) => applySubscription(tx, ended));
+    } catch (error) {
+      errors.push(error);
+    }
+  }
+  return errors;
+}
+
+/**
+ * Dashboard "Cancel plan": cancels every subscription that can still bill this
+ * license (the current one and any a renewal replaced) and applies rule 2 now.
+ */
+export async function cancelLicenseSubscriptions(licenseId: string, db: Database = getDb()): Promise<void> {
+  const [license] = await db.select().from(licenses).where(eq(licenses.id, licenseId)).limit(1);
+  if (!license) throw new Error(`Unknown license ${licenseId}`);
+  const linked = license.subscriptionId
+    ? or(eq(subscriptions.licenseId, licenseId), eq(subscriptions.id, license.subscriptionId))
+    : eq(subscriptions.licenseId, licenseId);
+  const rows = await db
+    .select({ id: subscriptions.id, stripeSubscriptionId: subscriptions.stripeSubscriptionId })
+    .from(subscriptions)
+    .where(and(linked, isBillable()));
+  const errors = await cancelInStripe(rows, db);
+  if (errors.length > 0) {
+    throw new AggregateError(errors, `Could not cancel ${errors.length} subscription(s) of license ${licenseId}`);
+  }
+}
+
+/**
+ * After a renewal: cancels the subscriptions the license used before that can
+ * still bill (for example a second paid Renew tab). Failures are only logged:
+ * the worker's expiry pass retries them.
+ */
+export async function cancelReplacedSubscriptions(licenseId: string, db: Database = getDb()): Promise<void> {
+  const [license] = await db.select().from(licenses).where(eq(licenses.id, licenseId)).limit(1);
+  if (!license?.subscriptionId) return;
+  const rows = await db
+    .select({ id: subscriptions.id, stripeSubscriptionId: subscriptions.stripeSubscriptionId })
+    .from(subscriptions)
+    .where(and(eq(subscriptions.licenseId, licenseId), ne(subscriptions.id, license.subscriptionId), isBillable()));
+  for (const error of await cancelInStripe(rows, db)) {
+    console.error(`could not cancel a replaced subscription of license ${licenseId}; the worker retries`, error);
+  }
 }
 
 function readMetadata(metadata: Stripe.Metadata | null | undefined): CheckoutMetadata | null {
@@ -122,15 +181,19 @@ async function upsertSubscription(
   return row;
 }
 
-/** Rule 1 (new site) and rule 3 (renew) for a completed Checkout session. */
-export async function applyCheckoutSession(tx: Executor, session: Stripe.Checkout.Session): Promise<void> {
-  if (session.mode !== "subscription") return;
-  if (session.status !== "complete") return;
-  if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
+/**
+ * Rule 1 (new site) and rule 3 (renew) for a completed Checkout session.
+ * Returns the license id when a renewal links it to this subscription, so the
+ * caller can cancel the subscriptions it replaced once the transaction commits.
+ */
+export async function applyCheckoutSession(tx: Executor, session: Stripe.Checkout.Session): Promise<string | null> {
+  if (session.mode !== "subscription") return null;
+  if (session.status !== "complete") return null;
+  if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return null;
 
   const stripeSubscriptionId = idOf(session.subscription);
   const meta = readMetadata(session.metadata);
-  if (!stripeSubscriptionId || !meta) return;
+  if (!stripeSubscriptionId || !meta) return null;
 
   await lockSubscription(tx, stripeSubscriptionId);
 
@@ -146,8 +209,7 @@ export async function applyCheckoutSession(tx: Executor, session: Stripe.Checkou
   });
 
   if (meta.kind === "renew") {
-    await applyRenewal(tx, subscription, meta);
-    return;
+    return applyRenewal(tx, subscription, meta);
   }
 
   const [existing] = await tx
@@ -155,7 +217,7 @@ export async function applyCheckoutSession(tx: Executor, session: Stripe.Checkou
     .from(licenses)
     .where(eq(licenses.subscriptionId, subscription.id))
     .limit(1);
-  if (existing) return; // Already applied by the other path.
+  if (existing) return null; // Already applied by the other path.
 
   if (!isTemplate(meta.template)) throw new Error(`Unknown template in checkout metadata: ${meta.template}`);
 
@@ -171,6 +233,7 @@ export async function applyCheckoutSession(tx: Executor, session: Stripe.Checkou
     })
     .returning();
   if (!license) throw new Error("License insert returned no row");
+  await tx.update(subscriptions).set({ licenseId: license.id }).where(eq(subscriptions.id, subscription.id));
 
   const site = await insertSiteWithFreeSlug(tx, {
     userId: meta.userId,
@@ -181,6 +244,7 @@ export async function applyCheckoutSession(tx: Executor, session: Stripe.Checkou
     expiresAt: new Date(now.getTime() + SITE_LIFETIME_MS),
   });
   await enqueueJob("site.provision", { siteId: site.id }, { db: tx });
+  return null;
 }
 
 /** The slug was free at checkout time; if someone took it since, add a short suffix. */
@@ -206,19 +270,23 @@ async function applyRenewal(
   tx: Executor,
   subscription: Subscription,
   meta: Extract<CheckoutMetadata, { kind: "renew" }>,
-): Promise<void> {
+): Promise<string | null> {
   const [license] = await tx
     .select()
     .from(licenses)
     .where(and(eq(licenses.id, meta.licenseId), eq(licenses.userId, meta.userId)))
     .limit(1);
   if (!license) throw new Error(`Renewal for unknown license ${meta.licenseId}`);
-  if (license.subscriptionId === subscription.id && license.status === "active") return;
+  if (license.subscriptionId === subscription.id && license.status === "active") return license.id;
+  // Linked once already: a replayed session (success page reload, late duplicate)
+  // must not take the license back from a newer renewal or revive an ended plan.
+  if (subscription.licenseId === license.id) return null;
 
   await tx
     .update(licenses)
     .set({ subscriptionId: subscription.id, status: "active", activatedAt: new Date(), deactivatedAt: null })
     .where(eq(licenses.id, license.id));
+  await tx.update(subscriptions).set({ licenseId: license.id }).where(eq(subscriptions.id, subscription.id));
 
   const [site] = await tx
     .select({ id: sites.id, status: sites.status })
@@ -228,6 +296,7 @@ async function applyRenewal(
   if (site && !UNTOUCHABLE_SITE_STATUSES.has(site.status)) {
     await enqueueJob("site.unarchive", { siteId: site.id }, { db: tx });
   }
+  return license.id;
 }
 
 /** Mirrors a Stripe subscription and applies rule 2 when it has ended. */
