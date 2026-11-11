@@ -32,10 +32,6 @@ export interface TemplateInfo {
   tagline: string;
   description: string;
   highlights: string[];
-  /** Shelf-label SKU, e.g. WP-01-RST. */
-  sku: string;
-  /** Bin on the shelf, e.g. A-01. */
-  bin: string;
 }
 
 export const TEMPLATES: TemplateInfo[] = [
@@ -46,8 +42,6 @@ export const TEMPLATES: TemplateInfo[] = [
     description:
       "A warm, image-led site for cafés and restaurants with a menu section, hours and a reservation call to action.",
     highlights: ["Menu with prices", "Opening hours", "Reservation CTA"],
-    sku: "WP-01-RST",
-    bin: "A-01",
   },
   {
     id: "agency",
@@ -56,8 +50,6 @@ export const TEMPLATES: TemplateInfo[] = [
     description:
       "A bold studio site that puts work first: project grid, case studies, team and a contact form.",
     highlights: ["Project grid", "Case studies", "Team section"],
-    sku: "WP-01-AGY",
-    bin: "A-02",
   },
   {
     id: "services",
@@ -66,8 +58,6 @@ export const TEMPLATES: TemplateInfo[] = [
     description:
       "A clean site for trades and consultants with service cards, testimonials and a quote request form.",
     highlights: ["Service cards", "Testimonials", "Quote request"],
-    sku: "WP-01-SVC",
-    bin: "A-03",
   },
 ];
 

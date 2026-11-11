@@ -1,26 +1,46 @@
 import type { Product } from "@appshelf/db";
+import Image from "next/image";
 import Link from "next/link";
 import { Barcode } from "@/components/barcode";
 import { ArrowDown, ArrowUpRight } from "@/components/icons";
-import { TemplatePreview } from "@/components/template-preview";
 import { getCurrentUser } from "@/lib/auth";
 import { showcaseUrl, TEMPLATES } from "@/lib/config";
 import { formatPrice, getWordPressProduct } from "@/lib/products";
+import { TEMPLATE_SHOTS } from "@/lib/template-shots";
 
 export const dynamic = "force-dynamic";
 
-const STEPS = [
+/** What the system really does, in order (lifecycle rules in docs/contracts.md). */
+const LIFECYCLE = [
   {
-    title: "Pick a template",
-    body: "Restaurant, agency or services. Each one is a real WordPress theme with a live showcase you can open first.",
+    when: "You pay",
+    signal: "checkout.session.completed",
+    effect: "Licence turns active and a site.provision job is queued.",
+    status: "Queued",
   },
   {
-    title: "Pay with a test card",
-    body: "Stripe Checkout in test mode. Use 4242 4242 4242 4242, any future date and any CVC.",
+    when: "~1 minute later",
+    signal: "site-create.sh",
+    effect: "The worker creates your site on the Multisite network from the template and puts the admin login on your dashboard.",
+    status: "Live",
   },
   {
-    title: "Get your site",
-    body: "A worker provisions the site on a WordPress Multisite network. Your dashboard shows the address and the admin login.",
+    when: "You cancel",
+    signal: "customer.subscription.deleted",
+    effect: "Stripe ends the plan now, the licence goes inactive and the site is archived, not deleted.",
+    status: "Archived",
+  },
+  {
+    when: "You renew",
+    signal: "site.unarchive",
+    effect: "A new Checkout links a new subscription to the same licence and the site comes back as it was.",
+    status: "Live",
+  },
+  {
+    when: "48 hours after purchase",
+    signal: "site.delete",
+    effect: "Demo rule: the site and its subscription are removed automatically.",
+    status: "Deleted",
   },
 ];
 
@@ -33,10 +53,10 @@ const INCLUDED = [
 
 function ProductTag({ product, price }: { product: Product | null; price: string | null }) {
   return (
-    <article aria-label="WordPress Site product label" className="tag relative">
-      <div className="surface-ink flex items-center justify-between bg-ink-950 px-4 py-2 text-white">
+    <article aria-label="WordPress Site product label" className="border-2 border-ink-950 bg-white shadow-tag">
+      <div className="surface-ink flex items-center justify-between gap-4 bg-ink-950 px-4 py-2 text-white">
         <span className="label">SKU WP-01</span>
-        <span className="label text-signal-500">Bin A · Aisle 01</span>
+        <span className="label text-ink-300">Stripe test mode</span>
       </div>
       <div className="grid grid-cols-[1fr_auto] border-b-2 border-ink-950">
         <div className="p-4 sm:p-5">
@@ -48,25 +68,22 @@ function ProductTag({ product, price }: { product: Product | null; price: string
           <span className="label mt-2">per month</span>
         </div>
       </div>
-      <dl className="divide-y-2 divide-ink-100 px-4 font-mono text-xs sm:px-5">
+      <dl className="divide-y-2 divide-ink-100 px-4 sm:px-5">
         {[
           ["Network", "WordPress Multisite"],
-          ["Templates", `${TEMPLATES.length} on the shelf`],
-          ["Billing", "Stripe test mode"],
+          ["Templates", `${TEMPLATES.length} live showcases`],
+          ["Billing", "Monthly, cancel any time"],
           ["Lifetime", "48 h (demo)"],
         ].map(([k, v]) => (
           <div key={k} className="flex justify-between gap-4 py-2.5">
-            <dt className="uppercase tracking-(--tracking-label) text-ink-600">{k}</dt>
-            <dd className="text-right font-medium text-ink-950">{v}</dd>
+            <dt className="label text-ink-600">{k}</dt>
+            <dd className="text-right text-sm font-medium text-ink-950">{v}</dd>
           </div>
         ))}
       </dl>
       <div className="border-t-2 border-ink-950 px-4 pt-3 pb-2 sm:px-5">
-        <Barcode value="WP-01-0900" className="h-10 w-full text-ink-950" />
-        <p className="label mt-1.5 flex justify-between text-ink-600">
-          <span>WP-01-0900</span>
-          <span>AppShelf</span>
-        </p>
+        <Barcode value="WP-01" className="h-10 w-full text-ink-950" />
+        <p className="label mt-1.5 text-ink-600">WP-01 · AppShelf</p>
       </div>
     </article>
   );
@@ -82,11 +99,7 @@ export default async function HomePage() {
       <section className="border-b-2 border-ink-950 bg-white">
         <div className="page grid gap-12 py-(--spacing-section) lg:grid-cols-12 lg:items-center">
           <div className="lg:col-span-7">
-            <p className="label inline-flex items-center gap-2 border-2 border-ink-950 px-2 py-1 text-ink-950">
-              <span aria-hidden className="h-2 w-2 bg-signal-500 ring-2 ring-ink-950" />
-              Aisle 01 · Hosted WordPress
-            </p>
-            <h1 className="mt-6 text-display font-bold tracking-(--tracking-display)">
+            <h1 className="text-display font-bold tracking-(--tracking-display)">
               A live WordPress site, off the shelf in about a minute.
             </h1>
             <p className="mt-6 max-w-(--container-prose) text-lg text-ink-700">
@@ -98,13 +111,12 @@ export default async function HomePage() {
                 Get a site{price ? ` — ${price}/month` : ""}
               </Link>
               <Link href="#templates" className="text-link inline-flex items-center gap-2">
-                Browse the shelf
+                See the three templates
                 <ArrowDown />
               </Link>
             </div>
           </div>
-          <div className="bin-grid relative -mx-(--spacing-gutter) border-y-2 border-ink-950 px-(--spacing-gutter) py-10 sm:mx-0 sm:border-2 sm:px-8 lg:col-span-5">
-            <span className="label absolute top-2 left-3 bg-white px-1 text-ink-600 sm:left-4">Shelf A</span>
+          <div className="bin-grid -mx-(--spacing-gutter) border-y-2 border-ink-950 px-(--spacing-gutter) py-10 sm:mx-0 sm:border-2 sm:px-8 lg:col-span-5">
             <div className="mx-auto max-w-sm">
               <ProductTag product={product} price={price} />
             </div>
@@ -115,15 +127,12 @@ export default async function HomePage() {
       <section id="templates" aria-labelledby="templates-title" className="scroll-mt-4 py-(--spacing-section)">
         <div className="page">
           <div className="grid gap-4 lg:grid-cols-12 lg:items-end">
-            <div className="lg:col-span-7">
-              <p className="label text-ink-600">Aisle 01 · Shelf A · 3 bins</p>
-              <h2 id="templates-title" className="mt-3 text-3xl font-bold">
-                Three templates on the shelf, each one live.
-              </h2>
-            </div>
+            <h2 id="templates-title" className="text-3xl font-bold lg:col-span-7">
+              Three templates on the shelf, each one live.
+            </h2>
             <p className="text-ink-700 lg:col-span-5">
-              Every template has a public showcase site on the WordPress network. Open one to see exactly what you
-              will get before you pay.
+              These are screenshots of the real showcase sites on the WordPress network. Open one to click around
+              before you pay.
             </p>
           </div>
 
@@ -134,23 +143,31 @@ export default async function HomePage() {
                   key={t.id}
                   className={`flex flex-col ${i > 0 ? "border-t-2 border-ink-950 md:border-t-0 md:border-l-2" : ""}`}
                 >
-                  <div className="flex items-center justify-between border-b-2 border-ink-950 bg-ink-100 px-4 py-2">
-                    <span className="label font-bold text-ink-950">Bin {t.bin}</span>
-                    <span className="label text-ink-600">SKU {t.sku}</span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-4 sm:p-5">
-                    <TemplatePreview template={t} />
-                    <h3 className="mt-6 text-xl font-bold">{t.name}</h3>
-                    <p className="label mt-1 text-ink-600">{t.tagline}</p>
+                  <a
+                    href={showcaseUrl(t.id)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group block border-b-2 border-ink-950 bg-ink-100"
+                    aria-label={`Open the ${t.name} live demo in a new tab`}
+                  >
+                    <Image
+                      src={TEMPLATE_SHOTS[t.id].desktop}
+                      alt={`Home page of the ${t.name} showcase site`}
+                      sizes="(min-width: 1216px) 400px, (min-width: 768px) 33vw, 100vw"
+                      className="aspect-[16/10] h-auto w-full object-cover object-top transition-opacity duration-150 group-hover:opacity-90"
+                    />
+                  </a>
+                  <div className="flex flex-1 flex-col p-4 sm:p-6">
+                    <h3 className="text-xl font-bold">{t.name}</h3>
+                    <p className="mt-1 text-sm font-medium text-ink-600">{t.tagline}</p>
                     <p className="mt-4 text-sm text-ink-700">{t.description}</p>
-                    <ol className="mt-5 space-y-1.5 font-mono text-xs text-ink-950">
-                      {t.highlights.map((h, n) => (
-                        <li key={h} className="flex gap-3">
-                          <span className="text-ink-500">{String(n + 1).padStart(2, "0")}</span>
+                    <ul className="mt-5 flex flex-wrap gap-2">
+                      {t.highlights.map((h) => (
+                        <li key={h} className="label border-2 border-ink-200 px-2 py-0.5 text-ink-700">
                           {h}
                         </li>
                       ))}
-                    </ol>
+                    </ul>
                     <div className="mt-auto flex flex-wrap items-center gap-x-6 gap-y-3 pt-7">
                       <Link
                         href={
@@ -177,7 +194,7 @@ export default async function HomePage() {
                 </li>
               ))}
             </ul>
-            {/* The shelf rail the bins stand on. */}
+            {/* The shelf rail the templates stand on. */}
             <div aria-hidden className="h-3 bg-ink-950" />
             <div aria-hidden className="flex justify-between px-6">
               <span className="h-5 w-3 bg-ink-950" />
@@ -187,25 +204,30 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section aria-labelledby="steps-title" className="border-y-2 border-ink-950 bg-white py-(--spacing-section)">
+      <section aria-labelledby="lifecycle-title" className="border-y-2 border-ink-950 bg-white py-(--spacing-section)">
         <div className="page grid gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-4">
-            <p className="label text-ink-600">Pick ticket</p>
-            <h2 id="steps-title" className="mt-3 text-3xl font-bold">
-              How a site gets stocked
+          <div className="lg:col-span-5">
+            <h2 id="lifecycle-title" className="text-3xl font-bold">
+              What happens after you pay
             </h2>
+            <p className="mt-4 text-ink-700">
+              The life of one site, as the system records it. Each step is a real Stripe event or background job;
+              your dashboard shows the latest job for every site.
+            </p>
           </div>
-          <ol className="border-t-2 border-ink-950 lg:col-span-8">
-            {STEPS.map((step, i) => (
-              <li
-                key={step.title}
-                className="grid grid-cols-[4.5rem_1fr] gap-4 border-b-2 border-ink-950 py-6 sm:grid-cols-[7rem_1fr]"
-              >
-                <span className="font-mono text-3xl font-bold text-ink-950">{String(i + 1).padStart(2, "0")}</span>
+          <ol className="relative lg:col-span-7">
+            <span aria-hidden className="absolute top-2 bottom-2 left-[0.4375rem] w-0.5 bg-ink-950" />
+            {LIFECYCLE.map((row) => (
+              <li key={row.signal} className="relative grid gap-x-6 gap-y-2 pb-8 pl-10 last:pb-0 md:grid-cols-[1fr_auto]">
+                <span aria-hidden className="absolute top-1.5 left-0 h-4 w-4 border-2 border-ink-950 bg-white" />
                 <div>
-                  <h3 className="text-lg font-bold">{step.title}</h3>
-                  <p className="mt-2 max-w-(--container-prose) text-ink-700">{step.body}</p>
+                  <p className="text-lg font-bold">{row.when}</p>
+                  <p className="mt-1 font-mono text-sm break-all text-ink-600">{row.signal}</p>
+                  <p className="mt-2 max-w-(--container-prose) text-ink-700">{row.effect}</p>
                 </div>
+                <p className="md:pt-1">
+                  <span className="label inline-flex border-2 border-ink-950 px-2 py-0.5 font-bold">{row.status}</span>
+                </p>
               </li>
             ))}
           </ol>
@@ -216,7 +238,7 @@ export default async function HomePage() {
         <div className="page">
           <div className="tag grid md:grid-cols-[1fr_20rem]">
             <div className="p-6 sm:p-8">
-              <p className="label text-ink-600">Spec sheet · SKU WP-01</p>
+              <p className="label text-ink-600">Plan · SKU WP-01</p>
               <h2 id="pricing-title" className="mt-3 text-3xl font-bold">
                 {product?.name ?? "WordPress Site"}
               </h2>
@@ -232,20 +254,18 @@ export default async function HomePage() {
                 ))}
               </dl>
             </div>
-            <div className="flex flex-col justify-between gap-8 border-t-2 border-ink-950 bg-signal-500 p-6 text-ink-950 sm:p-8 md:border-t-0 md:border-l-2">
+            <div className="surface-ink flex flex-col justify-between gap-8 border-t-2 border-ink-950 bg-ink-950 p-6 text-white sm:p-8 md:border-t-0 md:border-l-2">
               <div>
-                <p className="label">Price per month</p>
+                <p className="label text-ink-300">Price per month</p>
                 <p className="mt-3 font-mono text-display leading-none font-bold tracking-tight">{price ?? "—"}</p>
-                <p className="mt-3 text-sm font-medium">Stripe test mode: no real card is charged.</p>
+                <p className="mt-3 text-sm text-ink-200">Stripe test mode: no real card is charged.</p>
               </div>
               {product ? (
-                <Link href={ctaHref} className="btn btn-ink w-full">
+                <Link href={ctaHref} className="btn btn-primary w-full">
                   Get a site
                 </Link>
               ) : (
-                <p className="border-2 border-ink-950 bg-white p-3 text-sm">
-                  The plan is being set up. Please check back in a minute.
-                </p>
+                <p className="border-2 border-white p-3 text-sm">The plan is being set up. Please check back in a minute.</p>
               )}
             </div>
           </div>

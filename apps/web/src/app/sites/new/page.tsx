@@ -27,8 +27,7 @@ export default async function NewSitePage({ searchParams }: { searchParams: Prom
       </Link>
       <div className="mt-4 grid gap-10 lg:grid-cols-12">
         <div className="lg:col-span-4">
-          <p className="label text-ink-600">Order form · SKU WP-01</p>
-          <h1 className="mt-3 text-3xl font-bold">Get a WordPress site</h1>
+          <h1 className="text-3xl font-bold">Get a WordPress site</h1>
           <p className="mt-4 text-ink-700">
             Choose a template and an address. After payment your site is provisioned automatically; it usually takes
             under a minute.

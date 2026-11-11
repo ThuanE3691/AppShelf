@@ -29,7 +29,7 @@ export function Countdown({ expiresAt, initialText }: { expiresAt: string; initi
 export function SecretValue({ value, label }: { value: string; label: string }) {
   const [shown, setShown] = useState(false);
   const [copied, setCopied] = useState(false);
-  const action = "label inline-flex min-h-8 items-center border-2 border-ink-950 bg-white px-2 text-ink-950 hover:bg-signal-500";
+  const action = "label inline-flex min-h-11 min-w-11 items-center justify-center border-2 border-ink-950 bg-white px-3 text-ink-950 hover:bg-ink-100 active:bg-ink-200";
   return (
     <span className="flex flex-wrap items-center gap-2">
       <code className="bg-ink-950 px-2 py-1 font-mono text-xs text-white">{shown ? value : "••••••••••••"}</code>

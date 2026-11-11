@@ -32,7 +32,7 @@ export default async function CheckoutSuccessPage({
       <div className="tag mx-auto max-w-xl">
         <div className="surface-ink flex items-center justify-between bg-ink-950 px-5 py-2.5 text-white">
           <span className="label">Receipt · pending sync</span>
-          <span className="label text-signal-500">Stripe test mode</span>
+          <span className="label text-ink-300">Stripe test mode</span>
         </div>
         <div className="p-6 sm:p-8">
           <h1 className="text-2xl font-bold">Payment received</h1>

@@ -12,7 +12,6 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
   if (await getCurrentUser()) redirect(next);
   return (
     <AuthCard
-      code="Form AS-01 · New account"
       title="Create your account"
       subtitle="One account holds all your AppShelf licences and sites."
     >

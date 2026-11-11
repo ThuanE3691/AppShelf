@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { useActionState, useEffect, useState } from "react";
 import type { NewSiteFormState } from "@/app/actions/sites";
 import { TEMPLATES } from "@/lib/config";
 import { slugify, validateSlug } from "@/lib/slug-rules";
+import { TEMPLATE_SHOTS } from "@/lib/template-shots";
 import { Check } from "./icons";
 import { SubmitButton } from "./submit-button";
 
@@ -60,12 +62,12 @@ export function NewSiteForm({
   return (
     <form action={formAction} className="space-y-10">
       <fieldset>
-        <legend className="field-label">01 · Template</legend>
+        <legend className="field-label">Template</legend>
         <div className="mt-3 grid gap-0 border-2 border-ink-950 sm:grid-cols-3">
           {TEMPLATES.map((t, i) => (
             <label
               key={t.id}
-              className={`group relative flex cursor-pointer flex-col bg-white p-4 transition-colors hover:bg-ink-100 has-[:checked]:bg-signal-500 has-[:focus-visible]:outline-3 has-[:focus-visible]:-outline-offset-6 has-[:focus-visible]:outline-ink-950 ${
+              className={`group relative flex cursor-pointer items-start gap-4 bg-white p-4 pr-12 transition-colors hover:bg-ink-100 has-[:checked]:bg-ink-950 has-[:checked]:text-white sm:flex-col sm:gap-0 sm:pr-4 has-[:focus-visible]:outline-3 has-[:focus-visible]:-outline-offset-6 has-[:focus-visible]:outline-ink-950 has-[:checked]:has-[:focus-visible]:outline-signal-500 ${
                 i > 0 ? "border-t-2 border-ink-950 sm:border-t-0 sm:border-l-2" : ""
               }`}
             >
@@ -77,19 +79,22 @@ export function NewSiteForm({
                 onChange={() => setTemplate(t.id)}
                 className="sr-only"
               />
-              <span className="flex items-center justify-between gap-2">
-                <span className="label text-ink-700 group-has-[:checked]:text-ink-950">
-                  Bin {t.bin} · {t.sku}
-                </span>
-                <span
-                  aria-hidden
-                  className="flex h-6 w-6 items-center justify-center border-2 border-ink-950 bg-white text-transparent group-has-[:checked]:bg-ink-950 group-has-[:checked]:text-signal-500"
-                >
-                  <Check />
-                </span>
+              <Image
+                src={TEMPLATE_SHOTS[t.id].mobile}
+                alt=""
+                sizes="(min-width: 640px) 200px, 80px"
+                className="h-auto w-20 shrink-0 border-2 border-ink-950 sm:w-full"
+              />
+              <span className="min-w-0 flex-1 sm:mt-4">
+                <span className="block text-lg font-bold">{t.name}</span>
+                <span className="mt-1 block text-sm text-ink-700 group-has-[:checked]:text-ink-200">{t.tagline}</span>
               </span>
-              <span className="mt-6 text-lg font-bold">{t.name}</span>
-              <span className="mt-1 text-sm text-ink-700 group-has-[:checked]:text-ink-950">{t.tagline}</span>
+              <span
+                aria-hidden
+                className="absolute top-3 right-3 flex h-7 w-7 items-center justify-center border-2 border-ink-950 bg-white text-transparent group-has-[:checked]:border-white group-has-[:checked]:bg-white group-has-[:checked]:text-ink-950"
+              >
+                <Check />
+              </span>
             </label>
           ))}
         </div>
@@ -98,7 +103,7 @@ export function NewSiteForm({
 
       <div>
         <label htmlFor="title" className="field-label">
-          02 · Site title
+          Site title
         </label>
         <input
           id="title"
@@ -121,9 +126,9 @@ export function NewSiteForm({
 
       <div>
         <label htmlFor="slug" className="field-label">
-          03 · Site address
+          Site address
         </label>
-        <div className="mt-2 flex border-2 border-ink-950 bg-white focus-within:shadow-[4px_4px_0_0_var(--color-signal-500)] has-[[aria-invalid=true]]:border-danger-700">
+        <div className="mt-2 flex border-2 border-ink-950 bg-white focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-ink-950 has-[[aria-invalid=true]]:border-danger-700">
           <span className="hidden items-center border-r-2 border-ink-950 bg-ink-100 px-3 font-mono text-xs text-ink-700 sm:inline-flex">
             {wpBaseUrl.replace(/^https?:\/\//, "")}/
           </span>
@@ -137,7 +142,7 @@ export function NewSiteForm({
               setSlugEdited(true);
               setSlug(e.target.value.toLowerCase());
             }}
-            className="block min-h-11 w-full min-w-0 px-3 py-2.5 font-mono text-base placeholder:text-ink-400 focus:outline-none focus-visible:outline-3 focus-visible:-outline-offset-4 focus-visible:outline-ink-950"
+            className="block min-h-11 w-full min-w-0 px-3 py-2.5 font-mono text-base placeholder:text-ink-500 focus:outline-none"
             placeholder="luna-bistro"
             aria-describedby="slug-prefix slug-status"
             aria-invalid={Boolean(slugError)}

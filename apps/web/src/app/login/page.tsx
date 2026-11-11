@@ -11,7 +11,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const next = safeNextPath((await searchParams).next);
   if (await getCurrentUser()) redirect(next);
   return (
-    <AuthCard code="Form AS-02 · Sign in" title="Sign in" subtitle="Manage your sites, cancel or renew your plan.">
+    <AuthCard title="Sign in" subtitle="Manage your sites, cancel or renew your plan.">
       <AuthForm mode="signin" action={signInAction} next={next} />
     </AuthCard>
   );

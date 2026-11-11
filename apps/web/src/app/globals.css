@@ -50,8 +50,9 @@
   --font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
 
-  --text-2xs: 0.6875rem;
-  --text-2xs--line-height: 1rem;
+  /* Mono labels: 13px so codes stay readable on phones. */
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.25rem;
   --text-xs: 0.75rem;
   --text-xs--line-height: 1.125rem;
   --text-sm: 0.875rem;
@@ -69,7 +70,7 @@
   --text-display: clamp(2.6rem, 1.4rem + 5.4vw, 5.5rem);
   --text-display--line-height: 0.94;
 
-  --tracking-label: 0.08em;
+  --tracking-label: 0.05em;
   --tracking-tight: -0.02em;
   --tracking-display: -0.035em;
 
@@ -100,8 +101,8 @@
 /* Monospace label: SKU codes, bin numbers, field captions. */
 @utility label {
   font-family: var(--font-mono);
-  font-size: var(--text-2xs);
-  line-height: var(--text-2xs--line-height);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
@@ -170,19 +171,20 @@
 
   /* min-h only applies when a link is set inline-flex (standalone); inline links in prose are unaffected. */
   .text-link {
-    @apply min-h-11 font-semibold text-ink-950 underline decoration-2 underline-offset-4 hover:decoration-signal-500 hover:decoration-4;
+    @apply min-h-11 font-semibold text-ink-950 underline decoration-2 underline-offset-4 hover:decoration-4;
   }
 
-  /* The shelf tag: white label, 2px ink border, hard offset shadow. */
+  /* A label surface: white, 2px ink border, flat. Only the hero tag and the
+     primary button carry the hard offset shadow. */
   .tag {
-    @apply border-2 border-ink-950 bg-white shadow-tag;
+    @apply border-2 border-ink-950 bg-white;
   }
 
   .field-label {
     @apply label block text-ink-700;
   }
   .field-input {
-    @apply mt-2 block min-h-11 w-full border-2 border-ink-950 bg-white px-3 py-2.5 text-base text-ink-950 placeholder:text-ink-400 focus:shadow-[4px_4px_0_0_var(--color-signal-500)] focus:outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink-950 aria-invalid:border-danger-700;
+    @apply mt-2 block min-h-11 w-full border-2 border-ink-950 bg-white px-3 py-2.5 text-base text-ink-950 placeholder:text-ink-500 focus:outline-3 focus:outline-offset-2 focus:outline-ink-950 aria-invalid:border-danger-700;
   }
   .field-error {
     @apply mt-2 text-sm font-medium text-danger-700;
@@ -197,7 +199,7 @@
     );
   }
 
-  /* Faint bin grid behind the hero shelf. */
+  /* Faint grid behind the hero product tag. */
   .bin-grid {
     background-image:
       linear-gradient(var(--color-ink-200) 1px, transparent 1px),

@@ -20,7 +20,7 @@ const STATUS_STYLE: Record<SiteStatus, { label: string; className: string }> = {
   provisioning: { label: "Setting up", className: "border-info-700 bg-info-100 text-info-700" },
   active: { label: "Live", className: "border-ok-700 bg-ok-100 text-ok-700" },
   archived: { label: "Archived", className: "border-ink-950 bg-ink-100 text-ink-950" },
-  deleting: { label: "Deleting", className: "border-ink-950 bg-signal-500 text-ink-950" },
+  deleting: { label: "Deleting", className: "border-ink-950 bg-ink-950 text-white" },
   deleted: { label: "Deleted", className: "border-ink-500 bg-white text-ink-600" },
   failed: { label: "Failed", className: "border-danger-700 bg-danger-100 text-danger-700" },
 };
@@ -54,7 +54,7 @@ function SiteCard({ entry, now }: { entry: DashboardSite; now: Date }) {
   return (
     <article className="tag" aria-labelledby={`site-${site.id}`}>
       <div className="surface-ink flex flex-wrap items-center justify-between gap-x-4 gap-y-1 bg-ink-950 px-5 py-2 text-white">
-        <span className="label">SKU {template?.sku ?? "WP-01"}</span>
+        <span className="label">{template?.name ?? site.template} template</span>
         <span className="label truncate text-ink-300">/{site.slug}/</span>
       </div>
       <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
@@ -64,18 +64,18 @@ function SiteCard({ entry, now }: { entry: DashboardSite; now: Date }) {
             <Badge
               className={
                 license.status === "active"
-                  ? "border-ink-950 bg-signal-500 text-ink-950"
+                  ? "border-ink-950 bg-ink-950 text-white"
                   : "border-ink-500 bg-white text-ink-600"
               }
             >
               Licence {license.status}
             </Badge>
           </div>
-          <h2 id={`site-${site.id}`} className="mt-3 truncate text-2xl font-bold">
+          <h2 id={`site-${site.id}`} className="mt-3 line-clamp-2 pb-1 text-2xl leading-tight font-bold break-words">
             {site.title}
           </h2>
           <p className="label mt-1 text-ink-600">
-            {template?.name ?? site.template} template · created{" "}
+            Created{" "}
             {site.createdAt.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC
           </p>
           {isGone ? (
@@ -177,11 +177,10 @@ export default async function DashboardPage({
       {busy && <AutoRefresh />}
       <div className="flex flex-wrap items-end justify-between gap-6 border-b-2 border-ink-950 pb-6">
         <div>
-          <p className="label text-ink-600">Your shelf · {entries.length} {entries.length === 1 ? "site" : "sites"}</p>
-          <h1 className="mt-3 text-3xl font-bold">Your sites</h1>
+          <h1 className="text-3xl font-bold">Your sites</h1>
           <p className="mt-2 font-mono text-sm break-all text-ink-600">Signed in as {user.email}</p>
         </div>
-        <Link href="/sites/new" className="btn btn-primary">
+        <Link href="/sites/new" className="btn btn-ink">
           <Plus />
           New site
         </Link>
@@ -197,8 +196,7 @@ export default async function DashboardPage({
       <div className="mt-10 space-y-10">
         {entries.length === 0 ? (
           <div className="border-2 border-dashed border-ink-950 bg-white px-6 py-16">
-            <p className="label text-ink-600">Bin empty</p>
-            <h2 className="mt-3 text-2xl font-bold">No sites yet</h2>
+            <h2 className="text-2xl font-bold">No sites yet</h2>
             <p className="mt-2 max-w-sm text-ink-700">
               Pick a template, pay with the Stripe test card and your WordPress site appears here.
             </p>

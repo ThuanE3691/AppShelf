@@ -3,7 +3,7 @@ export function SiteFooter() {
     <footer className="surface-ink border-t-2 border-ink-950 bg-ink-950 text-ink-200">
       <div className="page grid gap-6 py-10 md:grid-cols-[1fr_auto] md:items-end">
         <div>
-          <p className="label text-signal-500">AppShelf · personal portfolio project</p>
+          <p className="label text-white">AppShelf · personal portfolio project</p>
           <p className="mt-3 max-w-(--container-prose) text-sm">
             No real payments are taken and no real email is sent.
           </p>
