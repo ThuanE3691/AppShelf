@@ -9,11 +9,12 @@ services:
     image: appshelf-wordpress:local
     restart: "no"
     mem_limit: 512m
-    env_file: ["${APPSHELF_SECRETS_DIR:-.}/.secrets.local"]
+    # Code from wp_data runs here, so it gets the WordPress DB password and nothing else.
     environment:
       WORDPRESS_DB_HOST: mariadb:3306
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
       WP_DOMAIN: ${WP_DOMAIN:-wp.appshelf.localhost}
     volumes:
       - wp_data:/var/www/html
@@ -34,12 +35,14 @@ services:
     restart: "no"
     mem_limit: 256m
     command: ["/opt/appshelf/bin/wp-init.sh"]
-    env_file: ["${APPSHELF_SECRETS_DIR:-.}/.secrets.local"]
     environment:
       WORDPRESS_DB_HOST: mariadb:3306
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
+      WP_NETWORK_ADMIN_PASSWORD: ${WP_NETWORK_ADMIN_PASSWORD}
       WP_DOMAIN: ${WP_DOMAIN:-wp.appshelf.localhost}
+      WP_SCHEME: ${WP_SCHEME:-http}
     volumes:
       - wp_data:/var/www/html
     depends_on:

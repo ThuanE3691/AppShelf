@@ -121,6 +121,8 @@ function Test-TunnelEnabled {
 function Get-ComposeArgList {
   $composeArgs = @()
   if ($env:APPSHELF_PROJECT) { $composeArgs += @('-p', $env:APPSHELF_PROJECT) }
+  # Values for ${...} in the compose files; each service maps only the keys it needs.
+  foreach ($f in @($SecretsFile, $UserSecretsFile)) { if (Test-Path $f) { $composeArgs += @('--env-file', $f) } }
   $files = @('compose.yaml', 'wordpress/compose.yaml', 'apps/web/compose.yaml', 'apps/worker/compose.yaml', 'infra/images.compose.yaml')
   foreach ($f in $files) { if (Test-Path (Join-Path $Root $f)) { $composeArgs += @('-f', $f) } }
   if (Test-TunnelEnabled) { $composeArgs += @('-f', 'infra/tunnel.compose.yaml') }

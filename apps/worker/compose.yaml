@@ -3,12 +3,15 @@
 # repository root. Personal demo project: nothing restarts on its own.
 
 x-worker-env: &worker-env
-  # Same WordPress settings as the wordpress and wp-init services; lib.sh maps
-  # MARIADB_PASSWORD (from .secrets.local) to WORDPRESS_DB_PASSWORD.
+  # Same WordPress settings as the wordpress and wp-init services. The site
+  # scripts get only these (plus PATH and HOME), never the worker's other
+  # variables: see scriptEnv() in apps/worker/src/wp-scripts.ts.
   WORDPRESS_DB_HOST: mariadb:3306
   WORDPRESS_DB_NAME: wordpress
   WORDPRESS_DB_USER: wordpress
+  WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
   WP_DOMAIN: ${WP_DOMAIN:-wp.appshelf.localhost}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
 services:
   worker:
@@ -21,10 +24,9 @@ services:
     mem_limit: 384m
     # A running site script finishes before the worker exits (scripts take < 20 s).
     stop_grace_period: 60s
-    env_file:
-      - "${APPSHELF_SECRETS_DIR:-.}/.secrets.local"
-      - "${APPSHELF_SECRETS_DIR:-.}/.env.local"
-    environment: *worker-env
+    environment:
+      <<: *worker-env
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
     volumes:
       - wp_data:/var/www/html
     depends_on:
@@ -46,8 +48,6 @@ services:
     image: appshelf-worker:test
     restart: "no"
     mem_limit: 768m
-    env_file:
-      - "${APPSHELF_SECRETS_DIR:-.}/.secrets.local"
     environment:
       <<: *worker-env
       WP_INTERNAL_URL: http://wordpress

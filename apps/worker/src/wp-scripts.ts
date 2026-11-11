@@ -70,21 +70,65 @@ function expectFlag(stdout: string, blogId: number, flag: "archived" | "deleted"
   }
 }
 
+/**
+ * The only worker variables a site script sees. wp-cli runs PHP from the shared
+ * wp_data volume (wp-config.php, mu-plugins), so the worker's own secrets
+ * (Stripe key, Postgres password, anything else in its environment) must
+ * never reach it.
+ */
+const SCRIPT_ENV_NAMES = [
+  "PATH",
+  "HOME",
+  "LANG",
+  "TZ",
+  "WORDPRESS_DB_HOST",
+  "WORDPRESS_DB_NAME",
+  "WORDPRESS_DB_USER",
+  "WORDPRESS_DB_PASSWORD",
+  "WORDPRESS_CONFIG_EXTRA",
+  "WP_DOMAIN",
+  "WP_PATH",
+  "WP_CLI_CACHE_DIR",
+] as const;
+
+/** Builds the explicit environment for a site script from the worker's environment. */
+export function scriptEnv(source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = {};
+  for (const name of SCRIPT_ENV_NAMES) {
+    const value = source[name];
+    if (value !== undefined && value !== "") env[name] = value;
+  }
+  return env;
+}
+
+/**
+ * Site titles reach the scripts as argv, and execFile refuses a NUL byte there.
+ * The web form already rejects control characters; this keeps an older or
+ * hand-made row from failing a paid site: they become spaces.
+ */
+export function cleanTitle(title: string, fallback: string): string {
+  const cleaned = title.replace(/\p{Cc}+/gu, " ").replace(/\s+/g, " ").trim();
+  return cleaned || fallback;
+}
+
 export interface ShellScriptsOptions {
   dir: string;
   timeoutMs: number;
   /** Receives the script's stderr (logs) after each run. */
   onStderr?: (script: string, stderr: string) => void;
+  /** Environment the scripts run with; defaults to scriptEnv() of the worker's environment. */
+  env?: NodeJS.ProcessEnv;
 }
 
 /** Runs the real scripts with execFile (no shell, so titles cannot inject arguments). */
 export function shellWpScripts(options: ShellScriptsOptions): WpScripts {
+  const env = options.env ?? scriptEnv();
   const run = (script: string, args: string[]) =>
     new Promise<string>((resolve, reject) => {
       execFile(
         path.posix.join(options.dir, script),
         args,
-        { timeout: options.timeoutMs, killSignal: "SIGKILL", maxBuffer: 4 * 1024 * 1024 },
+        { env, timeout: options.timeoutMs, killSignal: "SIGKILL", maxBuffer: 4 * 1024 * 1024 },
         (error, stdout, stderr) => {
           if (stderr) options.onStderr?.(script, stderr);
           if (error) {
@@ -100,7 +144,7 @@ export function shellWpScripts(options: ShellScriptsOptions): WpScripts {
 
   return {
     async create(slug, title, template, adminEmail) {
-      return parseCreated(await run("site-create.sh", [slug, title, template, adminEmail]));
+      return parseCreated(await run("site-create.sh", [slug, cleanTitle(title, slug), template, adminEmail]));
     },
     async archive(blogId) {
       expectFlag(await run("site-archive.sh", [String(blogId)]), blogId, "archived", true);

@@ -1,6 +1,6 @@
 #!/bin/sh
-# AppShelf entrypoint: the MariaDB password is shared through MARIADB_PASSWORD
-# (secrets file), so map it to the variable the official image expects.
+# AppShelf entrypoint: Compose sets WORDPRESS_DB_PASSWORD; a container started
+# with only MARIADB_PASSWORD still gets the variable the official image expects.
 set -eu
 
 : "${WORDPRESS_DB_PASSWORD:=${MARIADB_PASSWORD:-}}"
