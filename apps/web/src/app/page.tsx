@@ -1,16 +1,93 @@
+import type { Product } from "@appshelf/db";
+import Image from "next/image";
 import Link from "next/link";
-import { TemplatePreview } from "@/components/template-preview";
+import { Barcode } from "@/components/barcode";
+import { ArrowDown, ArrowUpRight } from "@/components/icons";
 import { getCurrentUser } from "@/lib/auth";
 import { showcaseUrl, TEMPLATES } from "@/lib/config";
 import { formatPrice, getWordPressProduct } from "@/lib/products";
+import { TEMPLATE_SHOTS } from "@/lib/template-shots";
 
 export const dynamic = "force-dynamic";
 
-const STEPS = [
-  { title: "Pick a template", body: "Restaurant, agency or services. Each one is a real WordPress theme you can preview first." },
-  { title: "Pay with a test card", body: "Stripe Checkout in test mode. Use 4242 4242 4242 4242, any future date and any CVC." },
-  { title: "Get your site", body: "A worker provisions your site on a WordPress Multisite network and shows the admin login." },
+/** What the system really does, in order (lifecycle rules in docs/contracts.md). */
+const LIFECYCLE = [
+  {
+    when: "You pay",
+    signal: "checkout.session.completed",
+    effect: "Licence turns active and a site.provision job is queued.",
+    status: "Queued",
+  },
+  {
+    when: "~1 minute later",
+    signal: "site-create.sh",
+    effect: "The worker creates your site on the Multisite network from the template and puts the admin login on your dashboard.",
+    status: "Live",
+  },
+  {
+    when: "You cancel",
+    signal: "customer.subscription.deleted",
+    effect: "Stripe ends the plan now, the licence goes inactive and the site is archived, not deleted.",
+    status: "Archived",
+  },
+  {
+    when: "You renew",
+    signal: "site.unarchive",
+    effect: "A new Checkout links a new subscription to the same licence and the site comes back as it was.",
+    status: "Live",
+  },
+  {
+    when: "48 hours after purchase",
+    signal: "site.delete",
+    effect: "Demo rule: the site and its subscription are removed automatically.",
+    status: "Deleted",
+  },
 ];
+
+const INCLUDED = [
+  ["Site", "Your own address at wp.…/your-name/"],
+  ["Admin", "WordPress admin login on your dashboard"],
+  ["Cancel", "Any time: the site is archived; renew to restore it"],
+  ["Lifetime", "Demo rule: every site deletes itself after 48 hours"],
+];
+
+function ProductTag({ product, price }: { product: Product | null; price: string | null }) {
+  return (
+    <article aria-label="WordPress Site product label" className="border-2 border-ink-950 bg-white shadow-tag">
+      <div className="surface-ink flex items-center justify-between gap-4 bg-ink-950 px-4 py-2 text-white">
+        <span className="label">SKU WP-01</span>
+        <span className="label text-ink-300">Stripe test mode</span>
+      </div>
+      <div className="grid grid-cols-[1fr_auto] border-b-2 border-ink-950">
+        <div className="p-4 sm:p-5">
+          <h2 className="text-xl font-bold">{product?.name ?? "WordPress Site"}</h2>
+          <p className="mt-2 text-sm text-ink-700">One hosted site on the AppShelf network, built from the template you pick.</p>
+        </div>
+        <div className="flex min-w-28 flex-col items-center justify-center border-l-2 border-ink-950 bg-signal-500 px-4 py-3 text-ink-950">
+          <span className="font-mono text-3xl leading-none font-bold tracking-tight">{price ?? "—"}</span>
+          <span className="label mt-2">per month</span>
+        </div>
+      </div>
+      <dl className="divide-y-2 divide-ink-100 px-4 sm:px-5">
+        {[
+          ["Network", "WordPress Multisite"],
+          ["Templates", `${TEMPLATES.length} live showcases`],
+          ["Billing", "Monthly, cancel any time"],
+          ["Lifetime", "48 h (demo)"],
+        ].map(([k, v]) => (
+          <div key={k} className="flex justify-between gap-4 py-2.5">
+            <dt className="label text-ink-600">{k}</dt>
+            <dd className="text-right text-sm font-medium text-ink-950">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <div className="border-t-2 border-ink-950 px-4 pt-3 pb-2 sm:px-5">
+        <Barcode value="WP-01" className="h-10 w-full text-ink-950" />
+        <p className="label mt-1.5 text-ink-600">WP-01 · AppShelf</p>
+      </div>
+    </article>
+  );
+}
 
 export default async function HomePage() {
   const [user, product] = await Promise.all([getCurrentUser(), getWordPressProduct()]);
@@ -19,144 +96,179 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="relative overflow-hidden border-b border-slate-200 bg-white">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-40 h-80 bg-gradient-to-b from-brand-100/70 to-transparent blur-2xl"
-        />
-        <div className="relative mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:items-center lg:py-24">
-          <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
-              First product on the shelf: hosted WordPress
-            </p>
-            <h1 className="mt-5 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-              A live WordPress site,
-              <br />
-              <span className="text-brand-600">about a minute after checkout.</span>
+      <section className="border-b-2 border-ink-950 bg-white">
+        <div className="page grid gap-12 py-(--spacing-section) lg:grid-cols-12 lg:items-center">
+          <div className="lg:col-span-7">
+            <h1 className="text-display font-bold tracking-(--tracking-display)">
+              A live WordPress site, off the shelf in about a minute.
             </h1>
-            <p className="mt-5 max-w-xl text-lg text-slate-600">
+            <p className="mt-6 max-w-(--container-prose) text-lg text-ink-700">
               AppShelf sells licensed apps. Choose a template, name your site and pay with a Stripe test card. Your
-              licence switches on, the site is provisioned, and cancelling or renewing archives or restores it.
+              licence switches on and the site is provisioned; cancelling archives it and renewing brings it back.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link href={ctaHref} className="btn btn-primary px-5 py-3 text-base">
+            <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
+              <Link href={ctaHref} className="btn btn-primary px-6 text-base">
                 Get a site{price ? ` — ${price}/month` : ""}
               </Link>
-              <Link href="#templates" className="btn btn-secondary px-5 py-3 text-base">
-                See the templates
+              <Link href="#templates" className="text-link inline-flex items-center gap-2">
+                See the three templates
+                <ArrowDown />
               </Link>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {TEMPLATES.map((t, i) => (
-              <div key={t.id} className={i === 0 ? "col-span-2 sm:col-span-1 sm:row-span-2 sm:self-center" : ""}>
-                <TemplatePreview template={t} />
-              </div>
-            ))}
+          <div className="bin-grid -mx-(--spacing-gutter) border-y-2 border-ink-950 px-(--spacing-gutter) py-10 sm:mx-0 sm:border-2 sm:px-8 lg:col-span-5">
+            <div className="mx-auto max-w-sm">
+              <ProductTag product={product} price={price} />
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="templates" className="mx-auto max-w-6xl scroll-mt-8 px-4 py-16 sm:px-6">
-        <div className="max-w-2xl">
-          <h2 className="text-3xl font-bold tracking-tight">Three templates, all live</h2>
-          <p className="mt-3 text-slate-600">
-            Every template has a public showcase site on the WordPress network. Open one to see exactly what you will
-            get.
-          </p>
-        </div>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {TEMPLATES.map((t) => (
-            <article key={t.id} className="card flex flex-col p-5">
-              <TemplatePreview template={t} />
-              <h3 className="mt-5 text-lg font-semibold">{t.name}</h3>
-              <p className="text-sm font-medium text-slate-500">{t.tagline}</p>
-              <p className="mt-3 text-sm text-slate-600">{t.description}</p>
-              <ul className="mt-4 space-y-1.5 text-sm text-slate-700">
-                {t.highlights.map((h) => (
-                  <li key={h} className="flex items-center gap-2">
-                    <span aria-hidden className="text-emerald-600">✓</span>
-                    {h}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-6 flex flex-wrap gap-2 pt-1">
-                <a
-                  href={showcaseUrl(t.id)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-secondary"
-                  aria-label={`Open the ${t.name} showcase site in a new tab`}
+      <section id="templates" aria-labelledby="templates-title" className="scroll-mt-4 py-(--spacing-section)">
+        <div className="page">
+          <div className="grid gap-4 lg:grid-cols-12 lg:items-end">
+            <h2 id="templates-title" className="text-3xl font-bold lg:col-span-7">
+              Three templates on the shelf, each one live.
+            </h2>
+            <p className="text-ink-700 lg:col-span-5">
+              These are screenshots of the real showcase sites on the WordPress network. Open one to click around
+              before you pay.
+            </p>
+          </div>
+
+          <div className="mt-12">
+            <ul className="grid border-2 border-ink-950 bg-white md:grid-cols-3">
+              {TEMPLATES.map((t, i) => (
+                <li
+                  key={t.id}
+                  className={`flex flex-col ${i > 0 ? "border-t-2 border-ink-950 md:border-t-0 md:border-l-2" : ""}`}
                 >
-                  Live demo ↗
-                </a>
-                <Link
-                  href={
-                    user
-                      ? `/sites/new?template=${t.id}`
-                      : `/signup?next=${encodeURIComponent(`/sites/new?template=${t.id}`)}`
-                  }
-                  className="btn btn-primary"
-                >
-                  Use {t.name}
-                </Link>
-              </div>
-            </article>
-          ))}
+                  <a
+                    href={showcaseUrl(t.id)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group block border-b-2 border-ink-950 bg-ink-100"
+                    aria-label={`Open the ${t.name} live demo in a new tab`}
+                  >
+                    <Image
+                      src={TEMPLATE_SHOTS[t.id].desktop}
+                      alt={`Home page of the ${t.name} showcase site`}
+                      sizes="(min-width: 1216px) 400px, (min-width: 768px) 33vw, 100vw"
+                      className="aspect-[16/10] h-auto w-full object-cover object-top transition-opacity duration-150 group-hover:opacity-90"
+                    />
+                  </a>
+                  <div className="flex flex-1 flex-col p-4 sm:p-6">
+                    <h3 className="text-xl font-bold">{t.name}</h3>
+                    <p className="mt-1 text-sm font-medium text-ink-600">{t.tagline}</p>
+                    <p className="mt-4 text-sm text-ink-700">{t.description}</p>
+                    <ul className="mt-5 flex flex-wrap gap-2">
+                      {t.highlights.map((h) => (
+                        <li key={h} className="label border-2 border-ink-200 px-2 py-0.5 text-ink-700">
+                          {h}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-auto flex flex-wrap items-center gap-x-6 gap-y-3 pt-7">
+                      <Link
+                        href={
+                          user
+                            ? `/sites/new?template=${t.id}`
+                            : `/signup?next=${encodeURIComponent(`/sites/new?template=${t.id}`)}`
+                        }
+                        className="btn btn-secondary"
+                      >
+                        Use {t.name}
+                      </Link>
+                      <a
+                        href={showcaseUrl(t.id)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-link inline-flex items-center gap-1.5 text-sm"
+                        aria-label={`Open the ${t.name} live demo in a new tab`}
+                      >
+                        Live demo
+                        <ArrowUpRight />
+                      </a>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {/* The shelf rail the templates stand on. */}
+            <div aria-hidden className="h-3 bg-ink-950" />
+            <div aria-hidden className="flex justify-between px-6">
+              <span className="h-5 w-3 bg-ink-950" />
+              <span className="h-5 w-3 bg-ink-950" />
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="border-y border-slate-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-          <h2 className="text-3xl font-bold tracking-tight">How it works</h2>
-          <ol className="mt-10 grid gap-6 md:grid-cols-3">
-            {STEPS.map((step, i) => (
-              <li key={step.title} className="rounded-2xl bg-slate-50 p-6">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">
-                  {i + 1}
-                </span>
-                <h3 className="mt-4 font-semibold">{step.title}</h3>
-                <p className="mt-2 text-sm text-slate-600">{step.body}</p>
+      <section aria-labelledby="lifecycle-title" className="border-y-2 border-ink-950 bg-white py-(--spacing-section)">
+        <div className="page grid gap-10 lg:grid-cols-12">
+          <div className="lg:col-span-5">
+            <h2 id="lifecycle-title" className="text-3xl font-bold">
+              What happens after you pay
+            </h2>
+            <p className="mt-4 text-ink-700">
+              The life of one site, as the system records it. Each step is a real Stripe event or background job;
+              your dashboard shows the latest job for every site.
+            </p>
+          </div>
+          <ol className="relative lg:col-span-7">
+            <span aria-hidden className="absolute top-2 bottom-2 left-[0.4375rem] w-0.5 bg-ink-950" />
+            {LIFECYCLE.map((row) => (
+              <li key={row.signal} className="relative grid gap-x-6 gap-y-2 pb-8 pl-10 last:pb-0 md:grid-cols-[1fr_auto]">
+                <span aria-hidden className="absolute top-1.5 left-0 h-4 w-4 border-2 border-ink-950 bg-white" />
+                <div>
+                  <p className="text-lg font-bold">{row.when}</p>
+                  <p className="mt-1 font-mono text-sm break-all text-ink-600">{row.signal}</p>
+                  <p className="mt-2 max-w-(--container-prose) text-ink-700">{row.effect}</p>
+                </div>
+                <p className="md:pt-1">
+                  <span className="label inline-flex border-2 border-ink-950 px-2 py-0.5 font-bold">{row.status}</span>
+                </p>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      <section id="pricing" className="mx-auto max-w-6xl scroll-mt-8 px-4 py-16 sm:px-6">
-        <div className="card mx-auto max-w-lg p-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-brand-600">{product?.name ?? "WordPress Site"}</h2>
-          <p className="mt-3 flex items-baseline gap-1">
-            <span className="text-5xl font-bold tracking-tight">{price ?? "—"}</span>
-            <span className="text-slate-500">/ month</span>
-          </p>
-          <p className="mt-3 text-slate-600">
-            {product?.description ||
-              "One WordPress site on the AppShelf network, built from the template you pick."}
-          </p>
-          <ul className="mt-6 space-y-2 text-sm text-slate-700">
-            {[
-              "Your own site at wp.…/your-name/",
-              "WordPress admin login on your dashboard",
-              "Cancel any time: the site is archived, renew to restore it",
-              "Demo rule: every site deletes itself after 48 hours",
-            ].map((line) => (
-              <li key={line} className="flex gap-2">
-                <span aria-hidden className="text-emerald-600">✓</span>
-                {line}
-              </li>
-            ))}
-          </ul>
-          {product ? (
-            <Link href={ctaHref} className="btn btn-primary mt-8 w-full py-3 text-base">
-              Get a site
-            </Link>
-          ) : (
-            <p className="mt-8 rounded-lg bg-slate-100 p-3 text-center text-sm text-slate-600">
-              The plan is being set up. Please check back in a minute.
-            </p>
-          )}
-          <p className="mt-3 text-center text-xs text-slate-500">Stripe test mode: no real card is charged.</p>
+      <section id="pricing" aria-labelledby="pricing-title" className="scroll-mt-4 py-(--spacing-section)">
+        <div className="page">
+          <div className="tag grid md:grid-cols-[1fr_20rem]">
+            <div className="p-6 sm:p-8">
+              <p className="label text-ink-600">Plan · SKU WP-01</p>
+              <h2 id="pricing-title" className="mt-3 text-3xl font-bold">
+                {product?.name ?? "WordPress Site"}
+              </h2>
+              <p className="mt-3 max-w-(--container-prose) text-ink-700">
+                {product?.description || "One WordPress site on the AppShelf network, built from the template you pick."}
+              </p>
+              <dl className="mt-8 border-t-2 border-ink-950">
+                {INCLUDED.map(([k, v]) => (
+                  <div key={k} className="grid gap-1 border-b-2 border-ink-100 py-3 sm:grid-cols-[8rem_1fr] sm:gap-4">
+                    <dt className="label pt-0.5 text-ink-600">{k}</dt>
+                    <dd className="text-ink-950">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+            <div className="surface-ink flex flex-col justify-between gap-8 border-t-2 border-ink-950 bg-ink-950 p-6 text-white sm:p-8 md:border-t-0 md:border-l-2">
+              <div>
+                <p className="label text-ink-300">Price per month</p>
+                <p className="mt-3 font-mono text-display leading-none font-bold tracking-tight">{price ?? "—"}</p>
+                <p className="mt-3 text-sm text-ink-200">Stripe test mode: no real card is charged.</p>
+              </div>
+              {product ? (
+                <Link href={ctaHref} className="btn btn-primary w-full">
+                  Get a site
+                </Link>
+              ) : (
+                <p className="border-2 border-white p-3 text-sm">The plan is being set up. Please check back in a minute.</p>
+              )}
+            </div>
+          </div>
         </div>
       </section>
     </>

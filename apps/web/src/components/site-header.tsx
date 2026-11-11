@@ -3,39 +3,41 @@ import { signOutAction } from "@/app/actions/auth";
 import { getCurrentUser } from "@/lib/auth";
 import { Logo } from "./logo";
 
+const navLink =
+  "label min-h-11 items-center px-1.5 whitespace-nowrap text-ink-700 underline-offset-4 hover:text-ink-950 hover:underline sm:px-3";
+
 export async function SiteHeader() {
   const user = await getCurrentUser();
   return (
-    <header className="border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-slate-900">
-          <Logo />
-          <span>AppShelf</span>
+    <header className="border-b-2 border-ink-950 bg-white">
+      <div className="page flex h-16 items-center justify-between gap-3">
+        <Link href="/" className="-ml-1 shrink-0 p-1" aria-label="AppShelf home">
+          <Logo className="h-7 w-auto sm:h-9" />
         </Link>
-        <nav aria-label="Main" className="flex items-center gap-1 text-sm sm:gap-2">
-          <Link href="/#templates" className="hidden rounded-md px-3 py-2 text-slate-600 hover:text-slate-900 sm:block">
+        <nav aria-label="Main" className="flex items-center gap-0.5 sm:gap-2">
+          <Link href="/#templates" className={`${navLink} hidden md:inline-flex`}>
             Templates
           </Link>
-          <Link href="/#pricing" className="hidden rounded-md px-3 py-2 text-slate-600 hover:text-slate-900 sm:block">
+          <Link href="/#pricing" className={`${navLink} hidden md:inline-flex`}>
             Pricing
           </Link>
           {user ? (
             <>
-              <Link href="/dashboard" className="rounded-md px-3 py-2 font-medium text-slate-700 hover:text-slate-900">
+              <Link href="/dashboard" className={`${navLink} inline-flex`}>
                 Dashboard
               </Link>
               <form action={signOutAction}>
-                <button type="submit" className="rounded-md px-3 py-2 text-slate-500 hover:text-slate-900">
+                <button type="submit" className={`${navLink} inline-flex`}>
                   Sign out
                 </button>
               </form>
             </>
           ) : (
             <>
-              <Link href="/login" className="rounded-md px-3 py-2 font-medium text-slate-700 hover:text-slate-900">
+              <Link href="/login" className={`${navLink} inline-flex`}>
                 Sign in
               </Link>
-              <Link href="/signup?next=/sites/new" className="btn btn-primary">
+              <Link href="/signup?next=/sites/new" className="btn btn-ink ml-1 px-3 sm:px-5">
                 Get a site
               </Link>
             </>

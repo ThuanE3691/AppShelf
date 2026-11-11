@@ -1,54 +1,219 @@
 @import "tailwindcss";
 
+/*
+ * AppShelf design tokens: "industrial shelf label".
+ * Ink #121212 carries the page, signal yellow #ffd400 marks what matters
+ * (primary action, selection, the price tag). Yellow is only ever a fill
+ * behind ink text, never text on a light background. Corners are square,
+ * rules are 2px, depth is a hard offset shadow or nothing.
+ */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, Consolas, monospace;
-  --color-ink: #0f172a;
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-500: #6366f1;
-  --color-brand-600: #4f46e5;
-  --color-brand-700: #4338ca;
+  /* Wipe Tailwind's default palette, radii and shadows so nothing generic leaks in. */
+  --color-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+
+  /* Ink: a neutral grey scale anchored on #121212 (no blue or warm cast). */
+  --color-ink-950: #121212;
+  --color-ink-900: #1e1e1e;
+  --color-ink-800: #2c2c2c;
+  --color-ink-700: #404040;
+  --color-ink-600: #555555; /* secondary text: 7.4:1 on white */
+  --color-ink-500: #6b6b6b; /* meta text: 4.8:1 on paper */
+  --color-ink-400: #8f8f8f; /* non-text only */
+  --color-ink-300: #b5b5b5;
+  --color-ink-200: #d4d4d4;
+  --color-ink-100: #e6e6e6;
+  --color-paper: #f4f4f4;
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Signal yellow: fills only. */
+  --color-signal-300: #ffe666;
+  --color-signal-400: #ffdd33;
+  --color-signal-500: #ffd400;
+  --color-signal-600: #e6bf00;
+  --color-signal-100: #fff6c2;
+
+  /* Status: each pair passes 4.5:1 (text on its tint). */
+  --color-ok-700: #1f6b37;
+  --color-ok-100: #ddefe2;
+  --color-info-700: #1b4a87;
+  --color-info-100: #e1eaf6;
+  --color-danger-700: #a1241b;
+  --color-danger-100: #f8e3e1;
+
+  /* Type */
+  --font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+
+  /* Mono labels: 13px so codes stay readable on phones. */
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.25rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.375rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.625rem;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.5625rem;
+  --text-xl--line-height: 1.875rem;
+  --text-2xl: clamp(1.75rem, 1.4rem + 1.4vw, 2.4rem);
+  --text-2xl--line-height: 1.1;
+  --text-3xl: clamp(2.25rem, 1.6rem + 2.8vw, 3.75rem);
+  --text-3xl--line-height: 1.02;
+  --text-display: clamp(2.6rem, 1.4rem + 5.4vw, 5.5rem);
+  --text-display--line-height: 0.94;
+
+  --tracking-label: 0.05em;
+  --tracking-tight: -0.02em;
+  --tracking-display: -0.035em;
+
+  /* Spacing: 4px base grid; section rhythm tokens for page bands. */
+  --spacing: 0.25rem;
+  --spacing-section: clamp(4rem, 3rem + 5vw, 8rem);
+  --spacing-gutter: clamp(1rem, 0.5rem + 2.5vw, 2.5rem);
+
+  /* Shape and depth */
+  --radius-none: 0;
+  --shadow-tag: 6px 6px 0 0 var(--color-ink-950);
+  --shadow-tag-sm: 3px 3px 0 0 var(--color-ink-950);
+  --shadow-none: 0 0 #0000;
+
+  --container-page: 76rem;
+  --container-prose: 40rem;
+
+  --ease-snap: cubic-bezier(0.2, 0, 0, 1);
+  --animate-blink: blink 1.2s steps(2, start) infinite;
+
+  @keyframes blink {
+    to {
+      visibility: hidden;
+    }
+  }
 }
 
-html {
-  color-scheme: light;
+/* Monospace label: SKU codes, bin numbers, field captions. */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  line-height: var(--text-label--line-height);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
 }
 
-body {
-  background: #f8fafc;
-  color: var(--color-ink);
-  -webkit-font-smoothing: antialiased;
-}
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
 
-:focus-visible {
-  outline: 2px solid var(--color-brand-600);
-  outline-offset: 2px;
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink-950);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    letter-spacing: var(--tracking-tight);
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--color-signal-500);
+    color: var(--color-ink-950);
+  }
+
+  /* One focus style everywhere: a 3px ink outline, yellow on ink surfaces. */
+  :focus-visible {
+    outline: 3px solid var(--color-ink-950);
+    outline-offset: 2px;
+  }
+  .surface-ink :focus-visible {
+    outline-color: var(--color-signal-500);
+  }
 }
 
 @layer components {
+  .page {
+    @apply mx-auto w-full max-w-(--container-page) px-(--spacing-gutter);
+  }
+
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-11 shrink-0 items-center justify-center gap-2 border-2 whitespace-nowrap border-ink-950 px-5 py-2.5 text-sm font-bold tracking-tight transition-[transform,box-shadow,background-color] duration-150 ease-(--ease-snap) select-none disabled:cursor-not-allowed disabled:opacity-60;
   }
   .btn-primary {
-    @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700;
+    @apply bg-signal-500 text-ink-950 shadow-tag-sm hover:-translate-x-px hover:-translate-y-px hover:shadow-tag active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:translate-0 disabled:shadow-tag-sm;
   }
   .btn-secondary {
-    @apply border border-slate-300 bg-white text-slate-800 hover:bg-slate-50;
+    @apply bg-white text-ink-950 hover:bg-ink-100 active:bg-ink-200;
+  }
+  .btn-ink {
+    @apply bg-ink-950 text-white hover:bg-ink-800 active:bg-ink-700;
   }
   .btn-danger {
-    @apply border border-rose-200 bg-white text-rose-700 hover:bg-rose-50;
+    @apply border-danger-700 bg-white text-danger-700 hover:bg-danger-100 active:bg-danger-100;
   }
-  .card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+
+  /* min-h only applies when a link is set inline-flex (standalone); inline links in prose are unaffected. */
+  .text-link {
+    @apply min-h-11 font-semibold text-ink-950 underline decoration-2 underline-offset-4 hover:decoration-4;
   }
+
+  /* A label surface: white, 2px ink border, flat. Only the hero tag and the
+     primary button carry the hard offset shadow. */
+  .tag {
+    @apply border-2 border-ink-950 bg-white;
+  }
+
   .field-label {
-    @apply block text-sm font-medium text-slate-800;
+    @apply label block text-ink-700;
   }
   .field-input {
-    @apply mt-1.5 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none;
+    @apply mt-2 block min-h-11 w-full border-2 border-ink-950 bg-white px-3 py-2.5 text-base text-ink-950 placeholder:text-ink-500 focus:outline-3 focus:outline-offset-2 focus:outline-ink-950 aria-invalid:border-danger-700;
   }
   .field-error {
-    @apply mt-1.5 text-sm text-rose-700;
+    @apply mt-2 text-sm font-medium text-danger-700;
+  }
+
+  /* Diagonal hazard stripe, used once per screen at most. */
+  .hazard {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--color-signal-500) 0 10px,
+      var(--color-ink-950) 10px 20px
+    );
+  }
+
+  /* Faint grid behind the hero product tag. */
+  .bin-grid {
+    background-image:
+      linear-gradient(var(--color-ink-200) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-ink-200) 1px, transparent 1px);
+    background-size: 2rem 2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
