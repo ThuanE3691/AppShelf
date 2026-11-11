@@ -1,0 +1,19 @@
+# Public hostnames through a remotely-managed Cloudflare Tunnel. Merged by
+# scripts/appshelf.ps1 only when .secrets.local holds TUNNEL_TOKEN, which
+# `appshelf tunnel` writes once a domain (CF_ZONE) exists. Ingress is stored at
+# Cloudflare: app.<zone> -> http://web:3000, wp.<zone> -> http://wordpress:80.
+# Outbound-only: no host port is opened. Nothing restarts on its own.
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.7
+    restart: "no"
+    mem_limit: 64m
+    # cloudflared reads the token from TUNNEL_TOKEN, so it never appears in argv.
+    command: ["tunnel", "--no-autoupdate", "run"]
+    env_file: ["${APPSHELF_SECRETS_DIR:-.}/.secrets.local"]
+    depends_on:
+      web:
+        condition: service_started
+      wordpress:
+        condition: service_started
