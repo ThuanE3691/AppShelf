@@ -1,0 +1,50 @@
+# Base services. Merged with the other compose files by scripts/appshelf.ps1.
+# Personal demo project: nothing here restarts on its own.
+name: appshelf
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: "no"
+    mem_limit: 256m
+    env_file: [.secrets.local]
+    environment:
+      POSTGRES_DB: appshelf
+      POSTGRES_USER: appshelf
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appshelf -d appshelf"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  mariadb:
+    image: mariadb:11
+    restart: "no"
+    mem_limit: 384m
+    env_file: [.secrets.local]
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  edge:
+    image: caddy:2-alpine
+    restart: "no"
+    mem_limit: 64m
+    ports:
+      - "127.0.0.1:80:80"
+    volumes:
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
+
+volumes:
+  pg_data:
+  db_data:
+  wp_data:

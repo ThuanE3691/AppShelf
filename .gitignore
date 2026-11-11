@@ -1,0 +1,18 @@
+# secrets (local only, never committed)
+.env*
+!.env.example
+.secrets.local
+# deps and builds
+node_modules/
+.next/
+dist/
+out/
+coverage/
+*.tsbuildinfo
+# test output
+playwright-report/
+test-results/
+.lighthouse/
+# os
+.DS_Store
+Thumbs.db

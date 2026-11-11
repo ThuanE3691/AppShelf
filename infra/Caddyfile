@@ -1,0 +1,12 @@
+{
+	auto_https off
+	admin off
+}
+
+http://app.appshelf.localhost {
+	reverse_proxy web:3000
+}
+
+http://wp.appshelf.localhost {
+	reverse_proxy wordpress:80
+}
