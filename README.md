@@ -180,7 +180,8 @@ pwsh scripts/appshelf.ps1 up
 
 `set-domain` writes a `mysqldump` backup to `backups/` (gitignored), then
 updates `wp_site` and `wp_blogs` and runs `wp search-replace --network` for
-every stored URL. Running it again changes nothing. Once the tunnel token
+every stored URL, then points the site links in the app database
+(`sites.url`) at the new domain. Running it again changes nothing. Once the tunnel token
 exists, `up` also starts `cloudflared` and no longer starts `stripe-cli`.
 
 ## CI/CD
