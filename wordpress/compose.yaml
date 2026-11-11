@@ -1,0 +1,49 @@
+# WordPress Multisite services. Merged after the root compose.yaml
+# (paths below are relative to the repository root).
+# Personal demo project: nothing here restarts on its own.
+
+services:
+  wordpress:
+    build:
+      context: ./wordpress
+    image: appshelf-wordpress:local
+    restart: "no"
+    mem_limit: 512m
+    env_file: ["${APPSHELF_SECRETS_DIR:-.}/.secrets.local"]
+    environment:
+      WORDPRESS_DB_HOST: mariadb:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WP_DOMAIN: ${WP_DOMAIN:-wp.appshelf.localhost}
+    volumes:
+      - wp_data:/var/www/html
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /var/www/html/wp-config.php && curl -fsS -o /dev/null http://127.0.0.1/wp-includes/images/blank.gif"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  # One-shot, idempotent: network install, themes, mu-plugins, showcase sites.
+  wp-init:
+    build:
+      context: ./wordpress
+    image: appshelf-wordpress:local
+    restart: "no"
+    mem_limit: 256m
+    command: ["/opt/appshelf/bin/wp-init.sh"]
+    env_file: ["${APPSHELF_SECRETS_DIR:-.}/.secrets.local"]
+    environment:
+      WORDPRESS_DB_HOST: mariadb:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WP_DOMAIN: ${WP_DOMAIN:-wp.appshelf.localhost}
+    volumes:
+      - wp_data:/var/www/html
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      wordpress:
+        condition: service_healthy

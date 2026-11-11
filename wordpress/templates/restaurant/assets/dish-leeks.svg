@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320">
+  <rect width="480" height="320" fill="#f1e7d8"/>
+  <ellipse cx="240" cy="172" rx="170" ry="120" fill="#d9c7ad"/>
+  <ellipse cx="240" cy="164" rx="166" ry="116" fill="#fffaf3"/>
+  <ellipse cx="240" cy="168" rx="120" ry="70" fill="#f7f1e6"/>
+  <path d="M150 190c30-40 120-60 190-30 20 10 10 36-14 42-60 16-120 20-160 8-14-4-22-10-16-20z" fill="#efe8d9"/>
+  <g transform="rotate(-12 240 160)">
+    <rect x="120" y="136" width="240" height="30" rx="15" fill="#e9efd8"/><rect x="120" y="136" width="90" height="30" rx="15" fill="#9fb56a"/>
+    <rect x="180" y="136" width="8" height="30" fill="#2b2420" opacity=".7"/><rect x="240" y="136" width="8" height="30" fill="#2b2420" opacity=".7"/><rect x="300" y="136" width="8" height="30" fill="#2b2420" opacity=".7"/>
+  </g>
+  <g fill="#9a6a3a"><circle cx="200" cy="120" r="5"/><circle cx="290" cy="128" r="5"/><circle cx="260" cy="200" r="5"/><circle cx="320" cy="180" r="4"/></g>
+  <path d="M170 210c50 14 120 10 160-8" stroke="#c98a4b" stroke-width="5" fill="none" stroke-linecap="round"/>
+</svg>
