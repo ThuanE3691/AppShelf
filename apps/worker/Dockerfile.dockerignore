@@ -1,0 +1,21 @@
+# Build context is the repo root; send only what the worker image needs.
+**/node_modules
+**/.next
+**/dist
+**/bundle
+**/coverage
+**/*.tsbuildinfo
+**/next-env.d.ts
+.git
+.github
+.env*
+.secrets.local
+infra
+plans
+docs
+tests
+**/playwright-report
+**/test-results
+# Only the site scripts are needed from wordpress/.
+wordpress/*
+!wordpress/scripts
