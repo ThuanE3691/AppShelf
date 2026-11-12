@@ -12,14 +12,24 @@
  *
  * It drives the installed Google Chrome (channel "chrome") at 1280x720 and
  * writes `<outDir>/appshelf-demo.webm` plus `timings.json` (default outDir:
- * `<os tmpdir>/appshelf-demo`, outside the repo). Convert it to H.264 with
- * ffmpeg in Docker, from the folder that holds the recording:
+ * `<os tmpdir>/appshelf-demo`, outside the repo). `timings.trimStart` is where
+ * the landing page is on screen, so the blank first frames can be cut.
  *
- *   docker run --rm -v "$PWD:/w" -w /w linuxserver/ffmpeg -i appshelf-demo.webm \
- *     -c:v libx264 -preset slow -crf 24 -pix_fmt yuv420p -movflags +faststart \
- *     -an appshelf-demo.mp4
+ * The animated title and end cards are a HyperFrames composition in
+ * `showcase/media/cards` (silent, 1920x1080, 30 fps; scene lengths in its
+ * data/script.json). Render it, then splice cards and recording into the MP4
+ * with ffmpeg in Docker, from a folder holding both files (T = trimStart):
  *
- * The poster is one frame of that MP4, e.g. `-ss 46 -i appshelf-demo.mp4 -frames:v 1 poster.png`.
+ *   (cd showcase/media/cards && npx --yes hyperframes@0.8.77 render -o renders/appshelf-cards.mp4)
+ *   docker run --rm -v "$PWD:/w" -w /w linuxserver/ffmpeg \
+ *     -i appshelf-demo.webm -i appshelf-cards.mp4 -filter_complex \
+ *     "[1:v]scale=1280:720:flags=lanczos,fps=30,format=yuv420p,setsar=1,split[c1][c2]; \
+ *      [c1]trim=0:4.6,setpts=PTS-STARTPTS[a]; [c2]trim=4.6:11,setpts=PTS-STARTPTS[c]; \
+ *      [0:v]trim=start=T,setpts=PTS-STARTPTS,fps=30,format=yuv420p,setsar=1[b]; \
+ *      [a][b][c]concat=n=3:v=1:a=0[v]" -map "[v]" -c:v libx264 -preset slow -crf 24 \
+ *     -pix_fmt yuv420p -movflags +faststart -an appshelf-demo.mp4
+ *
+ * The poster is one frame of that MP4: `-ss <t> -i appshelf-demo.mp4 -frames:v 1 poster.png`.
  *
  * Environment: APP_URL (default http://app.appshelf.localhost). Each run signs
  * up a fresh throwaway user; its site deletes itself after 48 hours.
@@ -30,7 +40,6 @@ import path from "node:path";
 import { chromium } from "playwright-core";
 
 const APP = (process.env.APP_URL ?? "http://app.appshelf.localhost").replace(/\/$/, "");
-const REPO_URL = "github.com/ThuanE3691/AppShelf";
 const OUT = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), "appshelf-demo"));
 const SIZE = { width: 1280, height: 720 };
 const FONTS =
@@ -105,25 +114,6 @@ function captionScript() {
 async function setCaption(page, step, text) {
   caption = { step, text };
   await page.evaluate((c) => window.__renderCaption?.(c), caption).catch(() => {});
-}
-
-/** Full-screen title or end card in the app's shelf-label style. */
-async function card(page, html, holdMs) {
-  caption = { step: "", text: "" };
-  await page.setContent(`<!doctype html><html><head><link rel="stylesheet" href="${FONTS}">
-    <style>
-      html,body{margin:0;height:100%;background:#121212;color:#fff}
-      body{display:flex;flex-direction:column;justify-content:center;padding:0 96px;box-sizing:border-box;
-        font-family:"Space Grotesk",system-ui,sans-serif;border-bottom:16px solid #ffd400}
-      .label{font:700 18px "JetBrains Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:#ffd400}
-      h1{font-size:88px;line-height:1;margin:22px 0 18px;letter-spacing:-.02em}
-      p{font-size:28px;margin:0;color:#d6d6d6}
-      ul{list-style:none;padding:0;margin:30px 0 34px;display:flex;flex-wrap:wrap;gap:12px;max-width:1000px}
-      li{font:700 20px "JetBrains Mono",monospace;border:2px solid #ffd400;padding:10px 16px}
-      .mono{font:500 24px "JetBrains Mono",monospace;color:#fff}
-    </style></head><body>${html}</body></html>`);
-  await page.evaluate(() => document.fonts.ready);
-  await pause(holdMs);
 }
 
 async function typeSlow(page, selector, text) {
@@ -201,23 +191,16 @@ async function main() {
   await context.exposeFunction("__getCaption", () => caption);
   await context.addInitScript(`(${captionScript.toString().replace("__FONTS__", FONTS)})();`);
   const page = await context.newPage();
+  const videoStart = Date.now();
   page.on("dialog", async (dialog) => {
     await pause(1200);
     await dialog.accept();
   });
 
-  // Title card.
-  await card(
-    page,
-    `<div class="label">Personal demo project · Stripe test mode</div>
-     <h1>AppShelf</h1>
-     <p>Buy a hosted WordPress site, get it live in seconds, cancel and renew it.</p>`,
-    3000,
-  );
-
   // Landing page and the three templates.
   await page.goto(APP, { waitUntil: "load" });
   await setCaption(page, "1 / 8", "Landing page: hosted WordPress sites, billed by Stripe");
+  timings.trimStart = Number(Math.max(0, (Date.now() - videoStart) / 1000 - 0.2).toFixed(2));
   await pause(3000);
   await setCaption(page, "2 / 8", "Three templates on the shelf: restaurant, agency, services");
   await smoothScrollTo(page, "#templates");
@@ -287,15 +270,6 @@ async function main() {
   await pause(3000);
   await openSite(page, "8 / 8", "Renew → the same site is back online");
   await pause(3000);
-
-  // End card.
-  await card(
-    page,
-    `<div class="label">Built with</div>
-     <ul><li>Next.js</li><li>PostgreSQL</li><li>Stripe</li><li>WordPress Multisite</li><li>Docker</li><li>GitHub Actions</li></ul>
-     <div class="mono">${REPO_URL}</div>`,
-    4000,
-  );
 
   const video = page.video();
   await context.close();
