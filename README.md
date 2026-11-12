@@ -14,13 +14,16 @@ for demos. A Cloudflare Tunnel makes it public without opening any port.
 
 ## Demo video
 
-[![AppShelf demo: a Restaurant site live 5 seconds after a Stripe test payment](showcase/media/appshelf-demo-poster.png)](showcase/media/appshelf-demo.mp4)
+[![AppShelf demo: the Restaurant site live 8 seconds after a Stripe test payment](showcase/media/appshelf-demo-poster.png)](showcase/media/appshelf-demo.mp4)
 
-A 1 m 42 s captioned walkthrough (no sound) of the running app: sign up, pick a
-template, pay with the Stripe test card, see the site go live in about 5 seconds,
-cancel the plan (site archived) and renew it (site back online). The flow is
-recorded by [`scripts/record-demo.mjs`](scripts/record-demo.mjs); the title and
-end cards come from [`showcase/media/cards`](showcase/media/cards).
+A 2 m 13 s narrated walkthrough of the running app, with subtitles
+([`appshelf-demo.vtt`](showcase/media/appshelf-demo.vtt)): sign up, pick a
+template, pay with the Stripe test card, see the site go live in about
+8 seconds, cancel the plan (site archived) and renew it (site back online). The
+flow is recorded by [`scripts/record-demo.mjs`](scripts/record-demo.mjs) with a
+visible cursor and page wipes, the English voice-over is generated locally with
+Kokoro TTS, and the title and end cards come from
+[`showcase/media/cards`](showcase/media/cards).
 
 ## Architecture
 

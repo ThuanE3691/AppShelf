@@ -1,0 +1,81 @@
+WEBVTT
+
+1
+00:00:00.500 --> 00:00:04.797
+AppShelf. A personal demo project, running in Stripe test mode.
+
+2
+00:00:05.820 --> 00:00:10.161
+This is AppShelf, a small SaaS that sells hosted WordPress sites.
+
+3
+00:00:10.320 --> 00:00:15.887
+Payments run in Stripe test mode, and every site deletes itself after forty-eight hours.
+
+4
+00:00:16.054 --> 00:00:21.525
+There are three templates on the shelf: a restaurant, an agency, and a services business.
+
+5
+00:00:21.888 --> 00:00:27.397
+I'll pick the restaurant and sign up with a throwaway account. There's no email check in the demo.
+
+6
+00:00:29.672 --> 00:00:34.298
+Choose the template, give the site a title, and pick its address on the network.
+
+7
+00:00:35.410 --> 00:00:38.422
+Continue to payment hands over to Stripe Checkout.
+
+8
+00:00:39.859 --> 00:00:44.989
+This is Stripe's own hosted checkout. I pay with the test card, four two four two.
+
+9
+00:00:47.757 --> 00:00:51.495
+No real money moves: this Stripe account is in test mode.
+
+10
+00:00:58.728 --> 00:01:04.401
+Back on the dashboard, the payment is confirmed and a background worker builds the WordPress site.
+
+11
+00:01:04.558 --> 00:01:07.530
+The site is live 8 seconds after the payment.
+
+12
+00:01:08.968 --> 00:01:13.957
+Here it is: the restaurant template on its own address, ready to edit in WordPress.
+
+13
+00:01:15.471 --> 00:01:20.998
+Now cancel the plan. The licence turns inactive, and the site is archived right away.
+
+14
+00:01:24.324 --> 00:01:27.094
+Visitors now see that the site is archived.
+
+15
+00:01:28.686 --> 00:01:32.302
+Renewing goes through Stripe again, with the same test card.
+
+16
+00:01:32.877 --> 00:01:35.589
+Same card, four two four two, and pay.
+
+17
+00:01:51.018 --> 00:01:53.517
+The worker restores the archived site.
+
+18
+00:01:53.675 --> 00:01:56.373
+7 seconds later, it's live again.
+
+19
+00:01:57.961 --> 00:02:01.410
+The same site, with the same content, is back online.
+
+20
+00:02:06.790 --> 00:02:12.244
+It's built with Next.js, Postgres, Stripe and WordPress. The code is on GitHub.
