@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<!--
+  Title and end cards of the AppShelf demo video (HyperFrames 0.8.77 + GSAP, silent).
+  Built with the ak-motion-video skill in --silent mode: neo-brutalist-web motion
+  (stamp-in cards, hard offset shadows, block wipes) locked to the AppShelf palette
+  and fonts. Scene lengths live in data/script.json; scripts/record-demo.mjs has the
+  render and splice commands.
+-->
+<html lang="en" data-resolution="landscape" data-ratio="16x9">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>AppShelf demo cards</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/SpaceGrotesk.ttf") format("truetype"); font-weight: 300 700; font-display: block; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono.ttf") format("truetype"); font-weight: 100 800; font-display: block; }
+      :root { --ink: #121212; --paper: #ffffff; --signal: #ffd400; --muted: #a3a3a3; --W: 1920px; --H: 1080px; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--ink); }
+      #root { position: relative; width: var(--W); height: var(--H); overflow: hidden; background: var(--ink); color: var(--paper); font-family: "Space Grotesk", sans-serif; }
+      .layer { position: absolute; left: 0; top: 0; width: var(--W); height: var(--H); }
+      .abs { position: absolute; }
+      .scene { opacity: 0; visibility: hidden; }
+      .mono { font-family: "JetBrains Mono", monospace; }
+      #grid { left: -120px; top: -120px; width: 2160px; height: 1320px; opacity: 0.07;
+        background-image: repeating-linear-gradient(0deg, #fff 0 2px, transparent 2px 120px), repeating-linear-gradient(90deg, #fff 0 2px, transparent 2px 120px); }
+      #fade { background: #000; opacity: 1; pointer-events: none; }
+      #slab { background: var(--signal); pointer-events: none; visibility: hidden; }
+      .rail { left: 0; top: 1004px; width: 1920px; height: 22px; background: var(--signal); transform-origin: 0 50%; }
+      .leg { top: 1026px; width: 24px; height: 54px; background: var(--signal); }
+
+      /* title card: a shelf label */
+      #sc01 .tag { left: 170px; top: 240px; width: 1180px; background: var(--paper); color: var(--ink); border: 4px solid var(--paper); box-shadow: 18px 18px 0 var(--signal); }
+      #sc01 .tag-head { display: flex; justify-content: space-between; padding: 20px 36px; background: var(--ink); color: var(--paper); font: 600 26px/1 "JetBrains Mono", monospace; letter-spacing: 0.14em; text-transform: uppercase; }
+      #sc01 .tag-head .hot { color: var(--signal); }
+      #sc01 .tag-body { padding: 44px 52px 40px; }
+      #sc01 .mask { overflow: hidden; padding-bottom: 6px; }
+      #sc01 h1 { margin: 0; font: 700 176px/0.95 "Space Grotesk", sans-serif; letter-spacing: -0.035em; }
+      #sc01 .sub { margin: 26px 0 0; font: 500 40px/1.3 "Space Grotesk", sans-serif; color: #333; max-width: 980px; }
+      #sc01 .code { display: flex; align-items: flex-end; gap: 28px; margin-top: 40px; }
+      #sc01 .bars { display: flex; align-items: stretch; height: 74px; gap: 5px; }
+      #sc01 .bars i { display: block; background: var(--ink); transform-origin: 50% 100%; }
+      #sc01 .code-txt { font: 600 22px/1.4 "JetBrains Mono", monospace; letter-spacing: 0.12em; text-transform: uppercase; color: #444; }
+      #sc01 .sticker { left: 1150px; top: 690px; padding: 22px 30px; background: var(--signal); color: var(--ink); border: 4px solid var(--ink); box-shadow: 10px 10px 0 var(--paper); font: 800 34px/1.1 "JetBrains Mono", monospace; letter-spacing: 0.04em; text-transform: uppercase; transform: rotate(-4deg); }
+
+      /* end card: the stack and the repo */
+      #sc02 .label { left: 170px; top: 236px; font: 700 30px/1 "JetBrains Mono", monospace; letter-spacing: 0.18em; text-transform: uppercase; color: var(--signal); }
+      #sc02 .tags { left: 170px; top: 310px; width: 1560px; display: flex; flex-wrap: wrap; gap: 30px 30px; }
+      #sc02 .t { padding: 22px 32px; background: var(--paper); color: var(--ink); border: 4px solid var(--paper); box-shadow: 10px 10px 0 var(--signal); font: 700 50px/1 "Space Grotesk", sans-serif; letter-spacing: -0.01em; }
+      #sc02 .repo { left: 170px; top: 680px; font: 700 64px/1.1 "JetBrains Mono", monospace; color: var(--paper); }
+      #sc02 .under { left: 170px; top: 770px; width: 1150px; height: 10px; background: var(--signal); transform-origin: 0 50%; }
+      #sc02 .note { left: 170px; top: 830px; font: 500 30px/1.4 "JetBrains Mono", monospace; color: var(--muted); letter-spacing: 0.02em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="11" data-width="1920" data-height="1080">
+      <div id="bg" class="layer"><div id="grid" class="abs"></div></div>
+      <div id="stage" class="layer">
+        <section id="sc01" class="scene layer">
+          <div class="abs tag">
+            <div class="tag-head"><span>SKU WP-01 · AppShelf</span><span class="hot">Stripe test mode</span></div>
+            <div class="tag-body">
+              <div class="mask" data-layout-allow-overflow><h1>AppShelf</h1></div>
+              <p class="sub">Buy a hosted WordPress site, see it go live, cancel it and renew it.</p>
+              <div class="code"><div class="bars"></div><div class="code-txt">Personal demo project<br>Recorded from the running app</div></div>
+            </div>
+          </div>
+          <div class="abs sticker" data-layout-allow-overlap>Site live<br>in seconds</div>
+          <div class="abs rail"></div>
+          <div class="abs leg" style="left: 170px"></div>
+          <div class="abs leg" style="left: 1726px"></div>
+        </section>
+        <section id="sc02" class="scene layer">
+          <div class="abs label">Built with</div>
+          <div class="abs tags">
+            <span class="t">Next.js</span><span class="t">PostgreSQL</span><span class="t">Stripe</span>
+            <span class="t">WordPress Multisite</span><span class="t">Docker</span><span class="t">GitHub Actions</span>
+          </div>
+          <div class="abs repo">github.com/ThuanE3691/AppShelf</div>
+          <div class="abs under"></div>
+          <div class="abs note">Personal demo project · Stripe test mode only</div>
+          <div class="abs rail"></div>
+          <div class="abs leg" style="left: 170px"></div>
+          <div class="abs leg" style="left: 1726px"></div>
+        </section>
+      </div>
+      <div id="slab" class="layer"></div>
+      <div id="fade" class="layer"></div>
+    </div>
+
+    <script>/*TIMING:BEGIN*/window.TIMING={"mode":"silent","duration":11.0,"fps":30,"beat0":0,"beatLen":0.5,"kick":[],"drops":[],"outroBeat":22,"scenes":{"s01-title":{"start":0.0,"end":4.6,"lines":[{"on":0.0,"off":4.6,"words":[["card",0.1333,0.4333],["title",0.5,0.8],["sub",1.1,1.4],["sticker",1.7,2.0],["wipe",4.0,4.3]]}]},"s02-stack":{"start":4.6,"end":11.0,"lines":[{"on":4.6,"off":11.0,"words":[["reveal",4.6667,4.9667],["label",5.0667,5.3667],["tags",5.4,5.7],["repo",6.6,6.9],["note",7.6,7.9]]}]}},"captions":[],"sfx":[],"env":[]};/*TIMING:END*/</script>
+    <script>
+      (() => {
+        const T = window.TIMING;
+        const tl = gsap.timeline({ paused: true });
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+
+        const $ = (s, r = document) => r.querySelector(s);
+        const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+        const SC = T.scenes;
+        const hit = (sid, word) => SC[sid].lines.flatMap((l) => l.words).find((w) => w[0] === word);
+        const W = (sid, word) => {
+          const h = hit(sid, word);
+          if (!h) console.warn(`[timing] "${word}" missing in ${sid}`);
+          return h ? h[1] : SC[sid].start;
+        };
+        const rng = (seed) => () => {
+          seed = (seed + 0x6d2b79f5) | 0;
+          let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+        const FR = 1 / 30;
+
+        // ---------- DOM built before any tween ----------
+        const r = rng(4242);
+        const bars = $("#sc01 .bars");
+        for (let i = 0; i < 34; i++) {
+          const b = document.createElement("i");
+          b.style.width = `${[3, 4, 6, 9][Math.floor(r() * 4)]}px`;
+          bars.append(b);
+        }
+
+        // ---------- vocabulary (neo-brutalist-web at energy 3) ----------
+        // stamp: drops from 1.18 with a soft overshoot; the hard shadow grows after the landing
+        const stamp = (e, t, o = {}) => {
+          tl.fromTo(e, { autoAlpha: 0, scale: o.from ?? 1.18, rotate: o.rot0 ?? 0 },
+            { autoAlpha: 1, scale: 1, rotate: o.rot ?? 0, duration: 0.34, ease: "back.out(1.6)", stagger: o.stagger ?? 0 }, t);
+        };
+        const shadowIn = (e, t, shadow, o = {}) =>
+          tl.fromTo(e, { boxShadow: "0px 0px 0 " + shadow.c }, { boxShadow: `${shadow.x}px ${shadow.x}px 0 ${shadow.c}`, duration: 0.3, ease: "power4.out", stagger: o.stagger ?? 0 }, t);
+        const typeIn = (e, t, o = {}) => {
+          const el = typeof e === "string" ? $(e) : e;
+          const n = Math.max(1, el.textContent.replace(/\s+/g, " ").trim().length), d = o.d ?? n * 0.03;
+          tl.fromTo(el, { clipPath: "inset(-20% 100% -20% 0%)" }, { clipPath: "inset(-20% 0% -20% 0%)", duration: d, ease: `steps(${n})` }, t);
+          tl.set(el, { clipPath: "none" }, t + d);
+          return d;
+        };
+        const settleCam = (e, t0, t1, amt) => tl.fromTo(e, { scale: 1 }, { scale: 1 + amt, duration: Math.max(0.1, t1 - t0), ease: "none" }, t0);
+        const railIn = (sc, t) => {
+          tl.fromTo(`${sc} .rail`, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "expo.out" }, t);
+          tl.fromTo(`${sc} .leg`, { autoAlpha: 0, y: -30 }, { autoAlpha: 1, y: 0, duration: 0.3, ease: "back.out(1.6)", stagger: 0.06 }, t + 0.25);
+        };
+
+        // background drifts for the whole video so no frame is frozen
+        tl.fromTo("#grid", { x: 0, y: 0 }, { x: 60, y: 40, duration: T.duration, ease: "none" }, 0);
+        // autoAlpha keeps the fade and slab layers out of the contrast check while they are off screen
+        tl.fromTo("#fade", { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.3, ease: "power1.out" }, 0);
+
+        // ---------- s01: title card, then a yellow slab wipes in to hand off to the recording ----------
+        {
+          const sid = "s01-title", t0 = SC[sid].start, t1 = SC[sid].end;
+          tl.set("#sc01", { autoAlpha: 1 }, t0);
+          settleCam("#sc01", t0, t1, 0.035);
+          railIn("#sc01", t0 + 0.05);
+          stamp("#sc01 .tag", W(sid, "card"));
+          shadowIn("#sc01 .tag", W(sid, "card") + 0.2, { x: 18, c: "#ffd400" });
+          tl.fromTo("#sc01 .tag-head span", { autoAlpha: 0, x: -24 }, { autoAlpha: 1, x: 0, duration: 0.4, ease: "expo.out", stagger: 0.08 }, W(sid, "card") + 0.18);
+          tl.fromTo("#sc01 h1", { yPercent: 110, rotate: 3 }, { yPercent: 0, rotate: 0, duration: 0.6, ease: "expo.out" }, W(sid, "title"));
+          tl.fromTo("#sc01 .sub", { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power4.out" }, W(sid, "sub"));
+          tl.fromTo("#sc01 .bars i", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "power4.out", stagger: { each: 0.012, from: "start", ease: "power1.in" } }, W(sid, "sub") + 0.15);
+          tl.fromTo("#sc01 .code-txt", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, ease: "power2.out" }, W(sid, "sub") + 0.45);
+          stamp("#sc01 .sticker", W(sid, "sticker"), { from: 1.4, rot0: -12, rot: -4 });
+          // sticker wobbles once during the hold
+          tl.to("#sc01 .sticker", { rotate: -1, duration: 0.18, ease: "power2.out" }, W(sid, "sticker") + 1.2);
+          tl.to("#sc01 .sticker", { rotate: -4, duration: 0.5, ease: "back.out(2)" }, W(sid, "sticker") + 1.38);
+          // block wipe: the slab covers the frame at the scene end; the recording cuts in from it
+          tl.fromTo("#slab", { autoAlpha: 1, xPercent: -100 }, { autoAlpha: 1, xPercent: 0, duration: 0.42, ease: "power4.in", immediateRender: false }, W(sid, "wipe"));
+          tl.set("#sc01", { autoAlpha: 0 }, t1);
+        }
+
+        // ---------- s02: the slab slides off to reveal the stack and the repo ----------
+        {
+          const sid = "s02-stack", t0 = SC[sid].start, t1 = SC[sid].end;
+          tl.set("#sc02", { autoAlpha: 1 }, t0);
+          tl.fromTo("#slab", { autoAlpha: 1, xPercent: 0 }, { autoAlpha: 1, xPercent: 100, duration: 0.45, ease: "power4.out", immediateRender: false }, W(sid, "reveal"));
+          tl.set("#slab", { autoAlpha: 0 }, W(sid, "reveal") + 0.45);
+          settleCam("#sc02", t0, t1, 0.03);
+          railIn("#sc02", t0 + 0.2);
+          typeIn("#sc02 .label", W(sid, "label"), { d: 0.3 });
+          const tags = $$("#sc02 .t");
+          const rt = rng(91);
+          tags.forEach((el, i) => {
+            const t = W(sid, "tags") + i * 0.09 * (1 - i * 0.05);
+            stamp(el, t, { rot0: (rt() - 0.5) * 10, rot: (rt() - 0.5) * 3 });
+            shadowIn(el, t + 0.18, { x: 10, c: "#ffd400" });
+          });
+          const d = typeIn("#sc02 .repo", W(sid, "repo"), { d: 0.75 });
+          tl.fromTo("#sc02 .under", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "expo.out" }, W(sid, "repo") + d - 0.1);
+          tl.fromTo("#sc02 .note", { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.4, ease: "power4.out" }, W(sid, "note"));
+          tl.fromTo("#fade", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.9, ease: "power1.in", immediateRender: false }, t1 - 0.9);
+        }
+
+        tl.set({}, {}, T.duration); // pin the timeline length to the video duration
+      })();
+    </script>
+  </body>
+</html>
