@@ -15,6 +15,13 @@ function baseParams(product: Product, metadata: CheckoutMetadata, cancelPath: st
     subscription_data: { metadata },
     success_url: `${appUrl()}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${appUrl()}${cancelPath}`,
+    // Checkout otherwise shows the Stripe account's public business name, which a
+    // sandbox inherits from its parent account. Brand the page as AppShelf instead.
+    branding_settings: {
+      display_name: "AppShelf",
+      button_color: "#121212",
+      border_style: "rectangular",
+    },
   };
 }
 
