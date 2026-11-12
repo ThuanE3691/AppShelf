@@ -210,6 +210,34 @@ On `main` it also pushes `ghcr.io/thuane3691/appshelf-web`, `-wordpress` and
 `-worker`, tagged `latest` and the commit SHA. `appshelf up` on the demo PC
 pulls those images, so deploying is: merge, wait for CI, run `up`.
 
+## Live template showcase
+
+Static snapshots of the three showcase sites stay online at
+**https://thuane3691.github.io/AppShelf/**, even while the stack is off: a
+landing page plus `restaurant-demo/`, `agency-demo/` and `services-demo/`.
+
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml) builds them on
+every push to `main` that touches `wordpress/`, `showcase/` or the export
+script (and on demand): it boots `mariadb`, `wordpress` and `wp-init` with
+dummy secrets, runs [`scripts/export-static.sh`](scripts/export-static.sh) to
+mirror every page and asset under the `/AppShelf/` base path (WordPress-only
+links, feeds and forms removed, a "static snapshot" note in each banner), adds
+the landing page from [`showcase/`](showcase/), checks every link and deploys
+to GitHub Pages. Pull requests run the same build and checks without deploying.
+
+To build it locally against a WordPress published on port 8089:
+
+```bash
+WP_ORIGIN=http://127.0.0.1:8089 LANDING_DIR=showcase scripts/export-static.sh _site/AppShelf
+```
+
+```bash
+scripts/export-static.sh --check http://127.0.0.1:8000/AppShelf/
+```
+
+The second command crawls the build while it is served (for example with
+`python3 -m http.server 8000 --directory _site`).
+
 ## Limitations
 
 - One machine, one Multisite network, no backups beyond the dump `set-domain` takes.

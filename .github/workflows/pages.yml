@@ -1,0 +1,96 @@
+name: Pages
+
+# Static template showcase on GitHub Pages: boots the WordPress services with
+# dummy secrets, exports the three showcase sites with scripts/export-static.sh,
+# adds the landing page from showcase/, checks every link and deploys.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "wordpress/**"
+      - "showcase/**"
+      - "scripts/export-static.sh"
+      - ".github/workflows/pages.yml"
+  # Pull requests build and check the site; only main deploys.
+  pull_request:
+    paths:
+      - "wordpress/**"
+      - "showcase/**"
+      - "scripts/export-static.sh"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Deploys share the "pages" group and never cancel each other; pull request
+# checks get their own group so they cannot replace a pending deploy.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.ref) || 'pages' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Export and check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      # Required compose secrets use ${VAR:?}. This throwaway WordPress serves
+      # only public showcase pages, so dummy values are enough.
+      POSTGRES_PASSWORD: pages-dummy
+      MARIADB_PASSWORD: pages-dummy
+      MARIADB_ROOT_PASSWORD: pages-dummy
+      WP_NETWORK_ADMIN_PASSWORD: pages-dummy
+      COMPOSE_PROJECT_NAME: appshelf-export
+      COMPOSE_FILE: compose.yaml:wordpress/compose.yaml:.pages-export.compose.yaml
+      SITE_DIR: ${{ github.workspace }}/.pages-serve/AppShelf
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Start WordPress
+        run: |
+          # Publish WordPress on a local port for the export; nothing else changes.
+          cat > .pages-export.compose.yaml <<'YAML'
+          services:
+            wordpress:
+              ports:
+                - "127.0.0.1:8089:80"
+          YAML
+          docker compose up -d --build --wait mariadb wordpress
+          docker compose run --rm wp-init
+
+      - name: Export the showcase sites
+        env:
+          WP_ORIGIN: http://127.0.0.1:8089
+          LANDING_DIR: showcase
+        run: scripts/export-static.sh "$SITE_DIR"
+
+      - name: Link check
+        run: |
+          python3 -m http.server 8000 --bind 127.0.0.1 --directory "$(dirname "$SITE_DIR")" >/dev/null 2>&1 &
+          for _ in $(seq 1 20); do curl -fsS -o /dev/null http://127.0.0.1:8000/AppShelf/ && break; sleep 0.5; done
+          CHECK_EXTERNAL=1 scripts/export-static.sh --check http://127.0.0.1:8000/AppShelf/
+
+      - name: Stop WordPress
+        if: always()
+        run: docker compose down -v --remove-orphans
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ env.SITE_DIR }}
+
+  deploy:
+    name: Deploy
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
