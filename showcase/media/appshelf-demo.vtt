@@ -1,81 +1,57 @@
 WEBVTT
 
 1
-00:00:00.500 --> 00:00:04.797
-AppShelf. A personal demo project, running in Stripe test mode.
+00:00:02.107 --> 00:00:05.499
+AppShelf sells hosted WordPress sites, billed with Stripe.
 
 2
-00:00:05.820 --> 00:00:10.161
-This is AppShelf, a small SaaS that sells hosted WordPress sites.
+00:00:07.207 --> 00:00:09.047
+Pick one of three templates.
 
 3
-00:00:10.320 --> 00:00:15.887
-Payments run in Stripe test mode, and every site deletes itself after forty-eight hours.
+00:00:10.923 --> 00:00:14.455
+Sign up in seconds. There's no email check in this demo.
 
 4
-00:00:16.054 --> 00:00:21.525
-There are three templates on the shelf: a restaurant, an agency, and a services business.
+00:00:15.123 --> 00:00:17.977
+Choose a template, name the site, and pick its address.
 
 5
-00:00:21.888 --> 00:00:27.397
-I'll pick the restaurant and sign up with a throwaway account. There's no email check in the demo.
+00:00:20.555 --> 00:00:23.105
+Then pay on Stripe Checkout with the test card.
 
 6
-00:00:29.672 --> 00:00:34.298
-Choose the template, give the site a title, and pick its address on the network.
+00:00:26.355 --> 00:00:29.790
+Stripe sends a webhook, and a worker builds the WordPress site.
 
 7
-00:00:35.410 --> 00:00:38.422
-Continue to payment hands over to Stripe Checkout.
+00:00:30.955 --> 00:00:32.243
+And it's live.
 
 8
-00:00:39.859 --> 00:00:44.989
-This is Stripe's own hosted checkout. I pay with the test card, four two four two.
+00:00:33.578 --> 00:00:36.264
+Here's the new restaurant site, ready to edit.
 
 9
-00:00:47.757 --> 00:00:51.495
-No real money moves: this Stripe account is in test mode.
+00:00:38.839 --> 00:00:41.920
+Cancel the plan, and the licence turns inactive.
 
 10
-00:00:58.728 --> 00:01:04.401
-Back on the dashboard, the payment is confirmed and a background worker builds the WordPress site.
+00:00:43.439 --> 00:00:45.685
+Visitors now see an archived site.
 
 11
-00:01:04.558 --> 00:01:07.530
-The site is live 8 seconds after the payment.
+00:00:46.443 --> 00:00:48.361
+Renew with the same test card.
 
 12
-00:01:08.968 --> 00:01:13.957
-Here it is: the restaurant template on its own address, ready to edit in WordPress.
+00:00:53.058 --> 00:00:55.273
+Seconds later, it's back online.
 
 13
-00:01:15.471 --> 00:01:20.998
-Now cancel the plan. The licence turns inactive, and the site is archived right away.
+00:00:56.458 --> 00:00:58.433
+Same site, same content.
 
 14
-00:01:24.324 --> 00:01:27.094
-Visitors now see that the site is archived.
-
-15
-00:01:28.686 --> 00:01:32.302
-Renewing goes through Stripe again, with the same test card.
-
-16
-00:01:32.877 --> 00:01:35.589
-Same card, four two four two, and pay.
-
-17
-00:01:51.018 --> 00:01:53.517
-The worker restores the archived site.
-
-18
-00:01:53.675 --> 00:01:56.373
-7 seconds later, it's live again.
-
-19
-00:01:57.961 --> 00:02:01.410
-The same site, with the same content, is back online.
-
-20
-00:02:06.790 --> 00:02:12.244
-It's built with Next.js, Postgres, Stripe and WordPress. The code is on GitHub.
+00:01:00.620 --> 00:01:04.190
+Built with Next.js, Postgres, Stripe and WordPress.

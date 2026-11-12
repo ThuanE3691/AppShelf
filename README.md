@@ -14,16 +14,23 @@ for demos. A Cloudflare Tunnel makes it public without opening any port.
 
 ## Demo video
 
-[![AppShelf demo: the Restaurant site live 8 seconds after a Stripe test payment](showcase/media/appshelf-demo-poster.png)](showcase/media/appshelf-demo.mp4)
+[![AppShelf demo: the Restaurant site live 10 seconds after a Stripe test payment](showcase/media/appshelf-demo-poster.png)](showcase/media/appshelf-demo.mp4)
 
-A 2 m 13 s narrated walkthrough of the running app, with subtitles
-([`appshelf-demo.vtt`](showcase/media/appshelf-demo.vtt)): sign up, pick a
-template, pay with the Stripe test card, see the site go live in about
-8 seconds, cancel the plan (site archived) and renew it (site back online). The
-flow is recorded by [`scripts/record-demo.mjs`](scripts/record-demo.mjs) with a
-visible cursor and page wipes, the English voice-over is generated locally with
-Kokoro TTS, and the title and end cards come from
-[`showcase/media/cards`](showcase/media/cards).
+A 63-second narrated walkthrough of the running app, with subtitles
+([`appshelf-demo.vtt`](showcase/media/appshelf-demo.vtt)). It covers signing up,
+picking a template and paying with the Stripe test card. The site goes live
+10 seconds after the payment. Then the plan is cancelled (the site is archived)
+and renewed (the site is back online).
+
+[`scripts/record-demo.mjs`](scripts/record-demo.mjs) records the real flow with a
+visible cursor and page wipes. It fast-forwards typing, page loads and
+provisioning, with an on-screen timer. The zooms, spotlights, callouts and
+title/end cards are a HyperFrames composition in
+[`showcase/media/edit`](showcase/media/edit). The English voice-over is
+generated locally with Kokoro TTS. The background music is synthesised by
+[`showcase/media/music/generate-bed.py`](showcase/media/music/generate-bed.py)
+and ducked under the voice. Sources and licences are listed in
+[`showcase/media/CREDITS.md`](showcase/media/CREDITS.md).
 
 ## Architecture
 

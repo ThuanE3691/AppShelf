@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<!--
+  The AppShelf demo video's edit (HyperFrames 0.8.77 + GSAP, silent; audio is mixed afterwards).
+  The middle is assets/body.mp4: the real recording, already cut and sped up by
+  scripts/record-demo.mjs, which also injects window.EDIT (scene lengths, zooms,
+  spotlights, callouts, subtitles, speed badges and the provisioning timer, all in
+  seconds on this timeline and pixels of the 1920x1080 recording).
+  Motion: neo-brutalist-web cards (stamp-in, hard offset shadows, yellow block wipes)
+  locked to the AppShelf palette and fonts; camera moves use power3.inOut.
+-->
+<html lang="en" data-resolution="landscape" data-ratio="16x9">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>AppShelf demo edit</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/SpaceGrotesk.ttf") format("truetype"); font-weight: 300 700; font-display: block; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono.ttf") format("truetype"); font-weight: 100 800; font-display: block; }
+      :root { --ink: #121212; --paper: #ffffff; --signal: #ffd400; --muted: #a3a3a3; --W: 1920px; --H: 1080px; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--ink); }
+      #root { position: relative; width: var(--W); height: var(--H); overflow: hidden; background: var(--ink); color: var(--paper); font-family: "Space Grotesk", sans-serif; }
+      .layer { position: absolute; left: 0; top: 0; width: var(--W); height: var(--H); }
+      .abs { position: absolute; }
+      .scene { opacity: 0; visibility: hidden; }
+      #grid { left: -120px; top: -120px; width: 2160px; height: 1320px; opacity: 0.07;
+        background-image: repeating-linear-gradient(0deg, #fff 0 2px, transparent 2px 120px), repeating-linear-gradient(90deg, #fff 0 2px, transparent 2px 120px); }
+      #fade { background: #000; pointer-events: none; }
+      #slab { background: var(--signal); pointer-events: none; visibility: hidden; }
+      .rail { left: 0; top: 1004px; width: 1920px; height: 22px; background: var(--signal); transform-origin: 0 50%; }
+      .leg { top: 1026px; width: 24px; height: 54px; background: var(--signal); }
+
+      /* title card: a shelf label */
+      #sc01 .tag { left: 170px; top: 240px; width: 1180px; background: var(--paper); color: var(--ink); border: 4px solid var(--paper); box-shadow: 18px 18px 0 var(--signal); }
+      #sc01 .tag-head { display: flex; justify-content: space-between; padding: 20px 36px; background: var(--ink); color: var(--paper); font: 600 26px/1 "JetBrains Mono", monospace; letter-spacing: 0.14em; text-transform: uppercase; }
+      #sc01 .tag-head .hot { color: var(--signal); }
+      #sc01 .tag-body { padding: 44px 52px 40px; }
+      #sc01 .mask { overflow: hidden; padding-bottom: 6px; }
+      #sc01 h1 { margin: 0; font: 700 176px/0.95 "Space Grotesk", sans-serif; letter-spacing: -0.035em; }
+      #sc01 .sub { margin: 26px 0 0; font: 500 40px/1.3 "Space Grotesk", sans-serif; color: #333; max-width: 980px; }
+      #sc01 .code { display: flex; align-items: flex-end; gap: 28px; margin-top: 40px; }
+      #sc01 .bars { display: flex; align-items: stretch; height: 74px; gap: 5px; }
+      #sc01 .bars i { display: block; background: var(--ink); transform-origin: 50% 100%; }
+      #sc01 .code-txt { font: 600 22px/1.4 "JetBrains Mono", monospace; letter-spacing: 0.12em; text-transform: uppercase; color: #444; }
+      #sc01 .sticker { left: 1150px; top: 690px; padding: 22px 30px; background: var(--signal); color: var(--ink); border: 4px solid var(--ink); box-shadow: 10px 10px 0 var(--paper); font: 800 34px/1.1 "JetBrains Mono", monospace; letter-spacing: 0.04em; text-transform: uppercase; transform: rotate(-4deg); }
+
+      /* body: the recording on a camera rig, with the spotlight in recording space */
+      #body { overflow: hidden; }
+      #cam { transform-origin: 0 0; }
+      #rec { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+      #spot { border: 4px solid var(--signal); border-radius: 12px; box-shadow: 0 0 0 4000px rgba(18, 18, 18, 0.58); opacity: 0; visibility: hidden; }
+
+      /* overlays in screen space */
+      .callout { display: flex; align-items: stretch; background: var(--ink); color: var(--paper); border: 3px solid var(--ink); box-shadow: 10px 10px 0 var(--signal); font: 700 34px/1.2 "JetBrains Mono", monospace; opacity: 0; visibility: hidden; white-space: nowrap; }
+      .callout .k { width: 18px; background: var(--signal); }
+      .callout .v { padding: 20px 28px 20px 24px; }
+      .pos-tl { left: 64px; top: 64px; } .pos-tr { right: 64px; top: 64px; }
+      .pos-bl { left: 64px; bottom: 150px; } .pos-br { right: 64px; bottom: 150px; }
+      .speed { left: 64px; top: 64px; padding: 12px 20px; background: var(--signal); color: var(--ink); border: 3px solid var(--ink); font: 800 30px/1 "JetBrains Mono", monospace; letter-spacing: 0.04em; opacity: 0; visibility: hidden; }
+      #timer { left: 50%; top: 64px; transform: translateX(-50%); display: flex; gap: 18px; align-items: center; padding: 16px 26px; background: var(--ink); color: var(--paper); border: 3px solid var(--signal); font: 700 32px/1 "JetBrains Mono", monospace; opacity: 0; visibility: hidden; }
+      #timer .n { color: var(--signal); font-variant-numeric: tabular-nums; min-width: 3.2ch; text-align: right; }
+      .cap { left: 0; right: 0; bottom: 0; display: flex; align-items: stretch; min-height: 84px; background: var(--ink); border-top: 6px solid var(--signal); opacity: 0; visibility: hidden; }
+      .cap .k { width: 26px; background: var(--signal); }
+      .cap .t { display: flex; align-items: center; padding: 14px 34px; font: 500 30px/1.35 "JetBrains Mono", monospace; color: var(--paper); }
+
+      /* end card: the stack and the repo */
+      #sc03 .label { left: 170px; top: 236px; font: 700 30px/1 "JetBrains Mono", monospace; letter-spacing: 0.18em; text-transform: uppercase; color: var(--signal); }
+      #sc03 .tags { left: 170px; top: 310px; width: 1560px; display: flex; flex-wrap: wrap; gap: 30px 30px; }
+      #sc03 .t { padding: 22px 32px; background: var(--paper); color: var(--ink); border: 4px solid var(--paper); box-shadow: 10px 10px 0 var(--signal); font: 700 50px/1 "Space Grotesk", sans-serif; letter-spacing: -0.01em; }
+      #sc03 .repo { left: 170px; top: 680px; font: 700 64px/1.1 "JetBrains Mono", monospace; color: var(--paper); }
+      #sc03 .under { left: 170px; top: 770px; width: 1150px; height: 10px; background: var(--signal); transform-origin: 0 50%; }
+      #sc03 .note { left: 170px; top: 830px; font: 500 30px/1.4 "JetBrains Mono", monospace; color: var(--muted); letter-spacing: 0.02em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="63.27" data-width="1920" data-height="1080">
+      <div id="bg" class="layer"><div id="grid" class="abs"></div></div>
+      <section id="sc01" class="scene layer">
+        <div class="abs tag">
+          <div class="tag-head"><span>SKU WP-01 · AppShelf</span><span class="hot">Stripe test mode</span></div>
+          <div class="tag-body">
+            <div class="mask" data-layout-allow-overflow><h1>AppShelf</h1></div>
+            <p class="sub">Buy a hosted WordPress site, see it go live, cancel it and renew it.</p>
+            <div class="code"><div class="bars"></div><div class="code-txt">Personal demo project<br>Recorded from the running app</div></div>
+          </div>
+        </div>
+        <div class="abs sticker" data-layout-allow-overlap>Site live<br>in seconds</div>
+        <div class="abs rail"></div>
+        <div class="abs leg" style="left: 170px"></div>
+        <div class="abs leg" style="left: 1726px"></div>
+      </section>
+      <section id="body" class="scene layer">
+        <div id="cam" class="layer">
+          <video id="rec" class="clip" src="assets/body.mp4" data-start="2" data-duration="58.27" data-track-index="1" muted playsinline></video>
+          <div id="spot" class="abs" data-layout-allow-overlap></div>
+        </div>
+      </section>
+      <div id="overlays" class="layer" data-layout-allow-overlap></div>
+      <section id="sc03" class="scene layer">
+        <div class="abs label">Built with</div>
+        <div class="abs tags">
+          <span class="t">Next.js</span><span class="t">PostgreSQL</span><span class="t">Stripe</span>
+          <span class="t">WordPress Multisite</span><span class="t">Docker</span><span class="t">GitHub Actions</span>
+        </div>
+        <div class="abs repo">github.com/ThuanE3691/AppShelf</div>
+        <div class="abs under"></div>
+        <div class="abs note">Personal demo project · Stripe test mode only</div>
+        <div class="abs rail"></div>
+        <div class="abs leg" style="left: 170px"></div>
+        <div class="abs leg" style="left: 1726px"></div>
+      </section>
+      <div id="slab" class="layer"></div>
+      <div id="fade" class="layer"></div>
+    </div>
+
+    <script>/*EDIT:BEGIN*/window.EDIT={"title":2,"body":58.27,"end":3,"duration":63.27,"captions":[{"at":2.107,"until":6.199,"text":"AppShelf sells hosted WordPress sites, billed with Stripe."},{"at":7.207,"until":9.747,"text":"Pick one of three templates."},{"at":10.923,"until":15.023,"text":"Sign up in seconds. There's no email check in this demo."},{"at":15.123,"until":18.677,"text":"Choose a template, name the site, and pick its address."},{"at":20.555,"until":23.805,"text":"Then pay on Stripe Checkout with the test card."},{"at":26.355,"until":30.49,"text":"Stripe sends a webhook, and a worker builds the WordPress site."},{"at":30.955,"until":32.943,"text":"And it's live."},{"at":33.578,"until":36.964,"text":"Here's the new restaurant site, ready to edit."},{"at":38.839,"until":42.62,"text":"Cancel the plan, and the licence turns inactive."},{"at":43.439,"until":46.343,"text":"Visitors now see an archived site."},{"at":46.443,"until":49.061,"text":"Renew with the same test card."},{"at":53.058,"until":55.973,"text":"Seconds later, it's back online."},{"at":56.458,"until":59.133,"text":"Same site, same content."}],"zooms":[{"at":2.548,"until":3.948,"z":1.35,"cx":1484,"cy":744,"release":true},{"at":12.094,"until":15.023,"z":1.3,"cx":1482,"cy":651,"release":true},{"at":15.786,"until":19.422,"z":1.3,"cx":1257,"cy":1237,"release":true},{"at":22.498,"until":24.846,"z":1.45,"cx":1358,"cy":653,"release":true},{"at":30.859,"until":32.259,"z":1.6,"cx":472,"cy":794,"release":true},{"at":35.025,"until":36.425,"z":1.2,"cx":405,"cy":611,"release":true},{"at":41.999,"until":43.399,"z":1.6,"cx":472,"cy":794,"release":true},{"at":55.083,"until":56.483,"z":1.6,"cx":472,"cy":794,"release":true}],"spots":[{"at":2.548,"until":3.948,"x":1198,"y":404,"w":572,"h":680},{"at":8.02,"until":10.113,"x":99,"y":452,"w":1723,"h":889},{"at":22.498,"until":24.846,"x":1094,"y":599,"w":528,"h":109},{"at":28.549,"until":30.853,"x":99,"y":678,"w":1723,"h":528},{"at":30.859,"until":32.259,"x":138,"y":772,"w":667,"h":42},{"at":41.999,"until":43.399,"x":138,"y":772,"w":667,"h":42},{"at":44.404,"until":45.804,"x":429,"y":140,"w":1062,"h":32},{"at":55.083,"until":56.483,"x":138,"y":772,"w":667,"h":42}],"callouts":[{"at":2.554,"until":3.954,"text":"WordPress site · $9/month · Stripe test mode","pos":"bl"},{"at":22.504,"until":24.846,"text":"Stripe test card 4242 · 12/34 · 123","pos":"tr"},{"at":28.549,"until":30.853,"text":"Webhook → job → WordPress","pos":"tr"},{"at":30.865,"until":32.265,"text":"Site live in 10 s","pos":"tr"},{"at":42.003,"until":43.403,"text":"Licence inactive · site archived","pos":"tr"},{"at":55.09,"until":56.49,"text":"Renewed · back online in 7 s","pos":"tr"}],"speeds":[{"at":20.455,"until":21.016,"speed":4},{"at":23.239,"until":23.642,"speed":4},{"at":26.253,"until":28.549,"speed":2},{"at":29.502,"until":30.853,"speed":2},{"at":40.672,"until":41.993,"speed":4},{"at":52.955,"until":55.075,"speed":3}],"timer":{"at":26.255,"until":32.053,"label":"Since payment","keys":[[26.253,0],[26.253,0.001],[28.549,5.704],[29.502,6.657],[30.853,10.016]]}};/*EDIT:END*/</script>
+    <script>
+      (() => {
+        const E = window.EDIT;
+        const tl = gsap.timeline({ paused: true });
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+        const $ = (s, r = document) => r.querySelector(s);
+        const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+        const rng = (seed) => () => {
+          seed = (seed + 0x6d2b79f5) | 0;
+          let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+        const B0 = E.title, B1 = E.title + E.body, END = E.duration;
+
+        // ---------- DOM built before any tween ----------
+        $("#root").dataset.duration = String(END);
+        const rec = $("#rec");
+        rec.dataset.start = String(B0);
+        rec.dataset.duration = String(E.body);
+        const r = rng(4242);
+        for (let i = 0; i < 34; i++) {
+          const b = document.createElement("i");
+          b.style.width = `${[3, 4, 6, 9][Math.floor(r() * 4)]}px`;
+          $("#sc01 .bars").append(b);
+        }
+        const ov = $("#overlays");
+        const make = (cls, html) => {
+          const el = document.createElement("div");
+          el.className = `abs ${cls}`;
+          el.innerHTML = html;
+          ov.append(el);
+          return el;
+        };
+        const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+        const caps = E.captions.map((c) => ({ ...c, el: make("cap", `<div class="k"></div><div class="t">${esc(c.text)}</div>`) }));
+        const calls = E.callouts.map((c) => ({ ...c, el: make(`callout pos-${c.pos}`, `<div class="k"></div><div class="v">${esc(c.text)}</div>`) }));
+        const speeds = E.speeds.map((s) => ({ ...s, el: make("speed", `▶▶ ${s.speed}×`) }));
+        const timer = E.timer ? make("", `<span>${esc(E.timer.label)}</span><span class="n">0 s</span>`) : null;
+        if (timer) timer.id = "timer";
+
+        // ---------- vocabulary ----------
+        const stamp = (e, t, o = {}) => tl.fromTo(e, { autoAlpha: 0, scale: o.from ?? 1.18, rotate: o.rot0 ?? 0 },
+          { autoAlpha: 1, scale: 1, rotate: o.rot ?? 0, duration: o.d ?? 0.3, ease: "back.out(1.6)", stagger: o.stagger ?? 0 }, t);
+        const shadowIn = (e, t, x) => tl.fromTo(e, { boxShadow: "0px 0px 0 #ffd400" }, { boxShadow: `${x}px ${x}px 0 #ffd400`, duration: 0.25, ease: "power4.out" }, t);
+        const typeIn = (e, t, d) => {
+          const el = typeof e === "string" ? $(e) : e;
+          const n = Math.max(1, el.textContent.trim().length);
+          tl.fromTo(el, { clipPath: "inset(-20% 100% -20% 0%)" }, { clipPath: "inset(-20% 0% -20% 0%)", duration: d, ease: `steps(${n})` }, t);
+          tl.set(el, { clipPath: "none" }, t + d);
+        };
+        const railIn = (sc, t) => {
+          tl.fromTo(`${sc} .rail`, { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "expo.out" }, t);
+          tl.fromTo(`${sc} .leg`, { autoAlpha: 0, y: -30 }, { autoAlpha: 1, y: 0, duration: 0.25, ease: "back.out(1.6)", stagger: 0.05 }, t + 0.15);
+        };
+        const showFor = (el, t0, t1, from = { y: 24 }) => {
+          tl.fromTo(el, { autoAlpha: 0, ...from }, { autoAlpha: 1, x: 0, y: 0, scale: 1, duration: 0.28, ease: "back.out(1.5)", immediateRender: false }, t0);
+          tl.to(el, { autoAlpha: 0, duration: 0.18, ease: "power2.in" }, Math.max(t0 + 0.3, t1 - 0.18));
+        };
+
+        tl.fromTo("#grid", { x: 0, y: 0 }, { x: 60, y: 40, duration: END, ease: "none" }, 0);
+        tl.fromTo("#fade", { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.25, ease: "power1.out" }, 0);
+
+        // ---------- title card (2 s), handing off to the recording with a yellow wipe ----------
+        tl.set("#sc01", { autoAlpha: 1 }, 0);
+        tl.fromTo("#sc01", { scale: 1 }, { scale: 1.03, duration: B0, ease: "none" }, 0);
+        railIn("#sc01", 0.02);
+        stamp("#sc01 .tag", 0.05, { d: 0.28 });
+        shadowIn("#sc01 .tag", 0.22, 18);
+        tl.fromTo("#sc01 .tag-head span", { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.3, ease: "expo.out", stagger: 0.06 }, 0.15);
+        tl.fromTo("#sc01 h1", { yPercent: 110, rotate: 3 }, { yPercent: 0, rotate: 0, duration: 0.45, ease: "expo.out" }, 0.22);
+        tl.fromTo("#sc01 .sub", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.35, ease: "power4.out" }, 0.45);
+        tl.fromTo("#sc01 .bars i", { scaleY: 0 }, { scaleY: 1, duration: 0.22, ease: "power4.out", stagger: { each: 0.008, ease: "power1.in" } }, 0.55);
+        tl.fromTo("#sc01 .code-txt", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2, ease: "power2.out" }, 0.75);
+        stamp("#sc01 .sticker", 0.8, { from: 1.4, rot0: -12, rot: -4 });
+        tl.fromTo("#slab", { autoAlpha: 1, xPercent: -100 }, { autoAlpha: 1, xPercent: 0, duration: 0.36, ease: "power4.in", immediateRender: false }, B0 - 0.36);
+        tl.set("#sc01", { autoAlpha: 0 }, B0);
+        tl.set("#slab", { autoAlpha: 0 }, B0);
+
+        // ---------- body: the recording, a camera rig and the highlights ----------
+        tl.set("#body", { autoAlpha: 1 }, B0);
+        tl.set("#body", { autoAlpha: 0 }, B1);
+        const camFor = (z) => (z.z === 1 ? { scale: 1, x: 0, y: 0 } : {
+          scale: z.z,
+          x: Math.min(0, Math.max(1920 - 1920 * z.z, 960 - z.cx * z.z)),
+          y: Math.min(0, Math.max(1080 - 1080 * z.z, 540 - z.cy * z.z)),
+        });
+        tl.set("#cam", { scale: 1, x: 0, y: 0 }, B0);
+        E.zooms.forEach((z) => {
+          tl.to("#cam", { ...camFor(z), duration: Math.min(0.7, Math.max(0.3, (z.until - z.at) / 2)), ease: "power3.inOut" }, z.at);
+          if (z.release) tl.to("#cam", { scale: 1, x: 0, y: 0, duration: 0.55, ease: "power3.inOut" }, z.until);
+        });
+        E.spots.forEach((s, i) => {
+          const pad = 14;
+          const box = { left: s.x - pad, top: s.y - pad, width: s.w + 2 * pad, height: s.h + 2 * pad };
+          const prev = E.spots[i - 1];
+          if (prev && Math.abs(prev.until - s.at) < 0.05) tl.to("#spot", { ...box, duration: 0.35, ease: "power3.inOut" }, s.at);
+          else {
+            tl.set("#spot", box, s.at);
+            tl.fromTo("#spot", { autoAlpha: 0, scale: 1.08 }, { autoAlpha: 1, scale: 1, duration: 0.3, ease: "power3.out", immediateRender: false }, s.at);
+          }
+          const next = E.spots[i + 1];
+          if (!next || Math.abs(next.at - s.until) >= 0.05) tl.to("#spot", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, s.until - 0.25);
+        });
+        calls.forEach((c) => showFor(c.el, c.at, c.until, { x: c.pos.endsWith("l") ? -40 : 40, scale: 0.9 }));
+        speeds.forEach((s) => showFor(s.el, s.at, s.until, { scale: 0.7 }));
+        caps.forEach((c) => {
+          tl.fromTo(c.el, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.22, ease: "power3.out", immediateRender: false }, c.at);
+          tl.to(c.el, { autoAlpha: 0, duration: 0.15, ease: "power2.in" }, c.until - 0.15);
+        });
+        if (timer) {
+          const T = E.timer, n = $(".n", timer), v = { s: 0 };
+          showFor(timer, T.at, T.until, { y: -24 });
+          T.keys.slice(1).forEach(([t, s], i) => {
+            const [t0, s0] = T.keys[i];
+            tl.fromTo(v, { s: s0 }, { s, duration: Math.max(1 / 30, t - t0), ease: "none", immediateRender: false,
+              onUpdate: () => { n.textContent = `${Math.floor(v.s)} s`; } }, t0);
+          });
+        }
+
+        // ---------- end card (3 s): the slab slides off to reveal the stack and the repo ----------
+        tl.set("#sc03", { autoAlpha: 1 }, B1);
+        tl.fromTo("#slab", { autoAlpha: 1, xPercent: -100 }, { autoAlpha: 1, xPercent: 0, duration: 0.3, ease: "power4.in", immediateRender: false }, B1 - 0.3);
+        tl.fromTo("#slab", { autoAlpha: 1, xPercent: 0 }, { autoAlpha: 1, xPercent: 100, duration: 0.38, ease: "power4.out", immediateRender: false }, B1 + 0.02);
+        tl.set("#slab", { autoAlpha: 0 }, B1 + 0.4);
+        tl.fromTo("#sc03", { scale: 1 }, { scale: 1.025, duration: E.end, ease: "none" }, B1);
+        railIn("#sc03", B1 + 0.12);
+        typeIn("#sc03 .label", B1 + 0.25, 0.2);
+        const rt = rng(91);
+        $$("#sc03 .t").forEach((el, i) => {
+          stamp(el, B1 + 0.38 + i * 0.06, { rot0: (rt() - 0.5) * 10, rot: (rt() - 0.5) * 3, d: 0.26 });
+          shadowIn(el, B1 + 0.5 + i * 0.06, 10);
+        });
+        typeIn("#sc03 .repo", B1 + 0.95, 0.5);
+        tl.fromTo("#sc03 .under", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "expo.out" }, B1 + 1.4);
+        tl.fromTo("#sc03 .note", { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.3, ease: "power4.out" }, B1 + 1.55);
+        tl.fromTo("#fade", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.5, ease: "power1.in", immediateRender: false }, END - 0.5);
+
+        tl.set({}, {}, END); // pin the timeline length to the video duration
+      })();
+    </script>
+  </body>
+</html>
