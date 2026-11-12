@@ -1,0 +1,86 @@
+{
+  "title": "AppShelf: making of the demo video (Upwork ad)",
+  "source": "../edit/ and the ak-motion-video --from-browser pipeline that produced appshelf-demo.mp4",
+  "arc": "problem_solution",
+  "hook": "pain_point",
+  "ending": "call_to_action",
+  "voice": {
+    "provider": "local",
+    "local": { "url": "http://127.0.0.1:8880", "model": "kokoro", "voice": "af_heart", "speed": 1.0 }
+  },
+  "scenes": [
+    {
+      "id": "s01-hook",
+      "type": "cover",
+      "shot": { "size": "CLOSE", "camera": "static" },
+      "lines": [
+        { "en": "Your app needs a demo video.", "vi": "Your app needs a demo video." },
+        { "en": "You don't need an editor.", "vi": "You don't need an editor." }
+      ]
+    },
+    {
+      "id": "s02-brief",
+      "type": "ui-demo",
+      "shot": { "size": "MEDIUM", "camera": "push_in" },
+      "lines": [
+        { "en": "Describe the flow in one message.", "vi": "Describe the flow in one message." },
+        { "en": "An AI agent takes it from there.", "vi": "An AI agent takes it from there." }
+      ]
+    },
+    {
+      "id": "s03-code",
+      "type": "terminal",
+      "shot": { "size": "CLOSE", "camera": "pan_up" },
+      "lines": [
+        { "en": "It writes a script that drives your real app:", "vi": "It writes a script that drives your real app:" },
+        { "en": "every click, every field, every highlight.", "vi": "every click, every field, every highlight." }
+      ]
+    },
+    {
+      "id": "s04-capture",
+      "type": "ui-demo",
+      "shot": { "size": "WIDE", "camera": "parallax", "cutIn": { "word": "time-stamped", "size": "EXTREME_CLOSE" } },
+      "lines": [
+        { "en": "A real browser runs your real app,", "vi": "A real browser runs your real app," },
+        { "en": "and every frame is time-stamped.", "vi": "and every frame is time-stamped." }
+      ]
+    },
+    {
+      "id": "s05-cut",
+      "type": "diagram",
+      "shot": { "size": "MEDIUM", "camera": "truck" },
+      "lines": [
+        { "en": "Waits fast-forward.", "vi": "Waits fast-forward." },
+        { "en": "Every scene fits its line.", "vi": "Every scene fits its line." },
+        { "en": "Zooms, highlights and captions land on the exact frame.", "vi": "Zooms, highlights and captions land on the exact frame." }
+      ]
+    },
+    {
+      "id": "s06-result",
+      "type": "ui-demo",
+      "shot": { "size": "WIDE", "camera": "push_in" },
+      "lines": [
+        { "en": "Out comes a narrated demo, ready to post.", "vi": "Out comes a narrated demo, ready to post." }
+      ]
+    },
+    {
+      "id": "s07-iterate",
+      "type": "stats",
+      "shot": { "size": "MEDIUM", "camera": "pull_out" },
+      "lines": [
+        { "en": "You review, it re-renders.", "vi": "You review, it re-renders." },
+        { "en": "Changed your UI? Run it again.", "vi": "Changed your UI? Run it again." }
+      ]
+    },
+    {
+      "id": "s08-end",
+      "type": "outro",
+      "outro": true,
+      "shot": { "size": "WIDE", "camera": "static" },
+      "lines": [
+        { "en": "Send me your app's flow.", "vi": "Send me your app's flow." },
+        { "en": "I'll send you the video.", "vi": "I'll send you the video." }
+      ]
+    }
+  ]
+}

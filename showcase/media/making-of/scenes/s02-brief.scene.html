@@ -1,0 +1,98 @@
+<section id="sc002" class="scene layer">
+  <div class="cam layer">
+    <div class="abs panel card">
+      <div class="bar-head"><span>New task</span><span class="hot">AI agent</span></div>
+      <div class="thread">
+        <div class="abs empty"><div class="mono">New chat</div><div class="q">What should your demo video show?</div></div>
+        <div class="abs bubble">
+          <div class="k"></div>
+          <div class="msg">Record our checkout: sign up, pay with the test card, show the site go live. 45 seconds, with voice-over.</div>
+        </div>
+        <div class="abs reply">
+          <div class="who"><span class="av mono">AI</span><span class="nm mono">AI agent</span></div>
+          <div class="plan">
+            <div class="intro">On it. Here's the plan:</div>
+            <div class="row"><i class="box"><svg viewBox="0 0 30 30" width="30" height="30"><path class="draw" pathLength="1" d="M6,16 L12,22 L24,8" /></svg></i><span>Write <b class="mono">flow.mjs</b>: sign-up, checkout, live</span></div>
+            <div class="row"><i class="box"><svg viewBox="0 0 30 30" width="30" height="30"><path class="draw" pathLength="1" d="M6,16 L12,22 L24,8" /></svg></i><span>Record the real app in a browser</span></div>
+            <div class="row"><i class="box"><svg viewBox="0 0 30 30" width="30" height="30"><path class="draw" pathLength="1" d="M6,16 L12,22 L24,8" /></svg></i><span>Cut it to 45 s on the voice-over</span></div>
+            <div class="row"><i class="box"><svg viewBox="0 0 30 30" width="30" height="30"><path class="draw" pathLength="1" d="M6,16 L12,22 L24,8" /></svg></i><span>Add zooms, highlights and captions</span></div>
+            <div class="row"><i class="box"><svg viewBox="0 0 30 30" width="30" height="30"><path class="draw" pathLength="1" d="M6,16 L12,22 L24,8" /></svg></i><span>Mix voice and music, render 1080p</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="abs input">
+        <div class="field">
+          <div class="ph">Describe your app's flow…</div>
+          <div class="typed"><div class="tl">Record our checkout: sign up, pay with the test</div><div class="tl">card, show the site go live. 45 seconds, with</div><div class="tl">voice-over.</div></div>
+        </div>
+        <div class="send mono">Send</div>
+      </div>
+    </div>
+    <div class="abs sticker one" data-layout-allow-overlap>One message</div>
+  </div>
+</section>
+<style>
+  #sc002 .panel { left: 300px; top: 70px; width: 1320px; height: 860px; }
+  #sc002 .thread { position: absolute; left: 0; top: 54px; width: 100%; height: 620px; }
+  #sc002 .bubble { right: 40px; top: 34px; width: 860px; display: flex; background: var(--ink); color: var(--paper); }
+  #sc002 .bubble .k { width: 14px; flex: none; background: var(--signal); }
+  #sc002 .bubble .msg { padding: 20px 28px; font: 500 32px/1.35 "Space Grotesk", sans-serif; }
+  #sc002 .reply { left: 40px; top: 224px; width: 940px; }
+  #sc002 .who { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+  #sc002 .av { width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; background: var(--signal); border: 3px solid var(--ink); font-weight: 800; font-size: 22px; }
+  #sc002 .nm { font-weight: 700; font-size: 22px; letter-spacing: 0.12em; text-transform: uppercase; }
+  #sc002 .plan { border: 3px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); padding: 18px 26px 10px; background: var(--paper); }
+  #sc002 .intro { font: 600 30px/1.2 "Space Grotesk", sans-serif; margin-bottom: 12px; }
+  #sc002 .row { display: flex; align-items: center; gap: 18px; height: 50px; font: 500 29px/1.2 "Space Grotesk", sans-serif; }
+  #sc002 .row b { font-weight: 700; font-size: 26px; }
+  #sc002 .box { position: relative; flex: none; width: 34px; height: 34px; border: 3px solid var(--ink); background: var(--paper); }
+  #sc002 .box svg { position: absolute; left: 0; top: 0; }
+  #sc002 .box path { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linecap: square; }
+  #sc002 .input { left: 40px; right: 40px; bottom: 34px; height: 162px; display: flex; gap: 20px; }
+  #sc002 .field { position: relative; flex: 1; border: 3px solid var(--ink); padding: 16px 22px; font: 500 30px/1.38 "Space Grotesk", sans-serif; }
+  #sc002 .ph { color: #6b6b6b; }
+  #sc002 .typed { position: absolute; left: 22px; top: 16px; }
+  #sc002 .tl { white-space: nowrap; }
+  #sc002 .send { align-self: flex-end; padding: 18px 30px; background: var(--signal); color: var(--ink); border: 3px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); font-weight: 800; font-size: 28px; text-transform: uppercase; }
+  #sc002 .one { left: 1380px; top: 640px; transform: rotate(4deg); }
+  #sc002 .empty { left: 0; right: 0; top: 190px; text-align: center; color: #555; }
+  #sc002 .empty .mono { font-size: 22px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #6b6b6b; }
+  #sc002 .empty .q { margin-top: 14px; font: 600 48px/1.2 "Space Grotesk", sans-serif; color: #3a3a3a; }
+</style>
+<script>
+  const S = SC[sid], L1 = S.lines[0], L2 = S.lines[1];
+  const sc = "#sc002";
+  // the panel stamps up as the wipe clears; the camera keeps pushing in through the scene
+  tl.fromTo(`${sc} .panel`, { y: 60, rotate: -1.5 }, { y: 0, rotate: 0, duration: 0.6, ease: "expo.out" }, S.start);
+  settleCam(`${sc} .cam`, S.start, S.end, 0.045);
+  // the brief types into the field, one line at a time, while the voice describes it
+  const lines = $$(`${sc} .typed .tl`);
+  tl.set(`${sc} .bubble, ${sc} .reply, ${sc} .row, ${sc} .intro`, { autoAlpha: 0 }, 0);
+  const t0 = S.start + 0.3, t1 = L1.off - 0.05;
+  const chars = lines.map((l) => l.textContent.length), total = chars.reduce((a, b) => a + b, 0);
+  tl.set(`${sc} .ph`, { autoAlpha: 0 }, t0);
+  let t = t0;
+  lines.forEach((l, i) => { const d = ((t1 - t0) * chars[i]) / total; typeIn(l, t, { d }); t += d; });
+  // "one message": a sticker lands on the word, then the send button presses (hard shadow collapses)
+  pop(`${sc} .one`, W(sid, "message") - 0.05, { from: 1.4, ease: "back.out(2)" });
+  const tSend = L1.off + 0.2;
+  tl.to(`${sc} .send`, { x: 6, y: 6, boxShadow: "2px 2px 0 #121212", duration: 0.08, ease: "power2.out" }, tSend);
+  tl.to(`${sc} .send`, { x: 0, y: 0, boxShadow: "8px 8px 0 #121212", duration: 0.25, ease: "back.out(2)" }, tSend + 0.1);
+  tl.to(`${sc} .typed`, { autoAlpha: 0, y: -20, duration: 0.18, ease: "power2.in" }, tSend + 0.08);
+  tl.set(`${sc} .ph`, { autoAlpha: 1 }, tSend + 0.3);
+  tl.to(`${sc} .input`, { height: 84, duration: 0.35, ease: "power3.inOut" }, tSend + 0.1);
+  tl.to(`${sc} .empty`, { autoAlpha: 0, y: -30, duration: 0.2, ease: "power2.in" }, tSend);
+  tl.fromTo(`${sc} .bubble`, { autoAlpha: 0, y: 380, scale: 0.9 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.5, ease: "expo.out" }, tSend + 0.1);
+  fadeOut(`${sc} .one`, tSend + 0.4, { d: 0.25 });
+  // the agent answers on its line: plan rows stamp in, then tick one after another
+  tl.fromTo(`${sc} .reply`, { autoAlpha: 0, y: 40 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: "expo.out" }, L2.on);
+  rise(`${sc} .intro`, L2.on + 0.08, { y: 16, d: 0.35 });
+  tl.fromTo(`${sc} .row`, { autoAlpha: 0, x: -30 }, { autoAlpha: 1, x: 0, duration: 0.35, ease: "expo.out", stagger: { each: 0.05, ease: "power1.in" } }, L2.on + 0.12);
+  $$(`${sc} .row`).forEach((r, i) => {
+    const tt = L2.on + 0.35 + i * 0.6; // data/cues.json ticks use the same times
+    tl.to($(".box", r), { backgroundColor: "#ffd400", duration: 0.06 }, tt);
+    draw($("path", r), tt, 0.18, "power2.out");
+    bump($(".box", r), tt, { s: 1.18 });
+  });
+  bump(`${sc} .av`, W(sid, "agent"), { s: 1.15 });
+</script>

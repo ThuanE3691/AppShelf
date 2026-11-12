@@ -1,0 +1,74 @@
+<section id="sc007" class="scene layer">
+  <div class="cam layer">
+    <div class="abs top"><span class="kicker">After the first cut</span></div>
+    <div class="abs cards">
+      <div class="crd c1">
+        <div class="ic"><svg viewBox="0 0 120 120" width="120" height="120"><path class="draw" pathLength="1" d="M22,30 h76 v46 h-40 l-18,16 v-16 h-18 z" /><path class="draw ln" pathLength="1" d="M36,46 h48 M36,60 h32" /></svg></div>
+        <div class="no mono">01</div>
+        <div class="tt"><span>You review,</span><br><span>it re-renders</span></div>
+        <div class="sub">Notes in plain words. A new cut comes back.</div>
+        <div class="prog"><i></i></div>
+      </div>
+      <div class="crd c2">
+        <div class="ic"><svg class="spin" viewBox="0 0 120 120" width="120" height="120"><path class="draw" pathLength="1" d="M88,44 A32,32 0 1 0 92,72" /><path class="draw" pathLength="1" d="M90,24 v22 h-22" /></svg></div>
+        <div class="no mono">02</div>
+        <div class="tt"><span>UI changed?</span><br><span>Run it again</span></div>
+        <div class="sub">Same script, fresh recording, same timing.</div>
+      </div>
+      <div class="crd c3">
+        <div class="ic"><div class="sw s1"></div><div class="sw s2"></div><div class="sw s3"></div><div class="wv"><i></i><i></i><i></i><i></i><i></i></div></div>
+        <div class="no mono">03</div>
+        <div class="tt"><span>Your brand,</span><br><span>any voice</span></div>
+        <div class="sub">Your colours and fonts, the narrator you pick.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+  #sc007 .top { left: 120px; top: 120px; }
+  #sc007 .cards { left: 120px; top: 210px; width: 1680px; display: flex; gap: 60px; }
+  #sc007 .crd { position: relative; width: 520px; height: 600px; padding: 36px 36px 30px; background: var(--paper); color: var(--ink); border: 4px solid var(--paper); box-shadow: 14px 14px 0 var(--signal); }
+  #sc007 .ic { position: relative; width: 120px; height: 120px; background: var(--ink); }
+  #sc007 .ic path { fill: none; stroke: var(--signal); stroke-width: 7; stroke-linejoin: miter; stroke-linecap: square; }
+  #sc007 .spin { transform-origin: 50% 50%; }
+  #sc007 .no { position: absolute; right: 36px; top: 40px; font-size: 30px; font-weight: 800; color: #9a9a9a; }
+  #sc007 .tt { white-space: nowrap; margin-top: 44px; font: 700 54px/1.04 "Space Grotesk", sans-serif; letter-spacing: -0.025em; }
+  #sc007 .sub { margin-top: 22px; font: 500 28px/1.35 "Space Grotesk", sans-serif; color: #3d3d3d; }
+  #sc007 .prog { position: absolute; left: 36px; right: 36px; bottom: 36px; height: 22px; border: 3px solid var(--ink); }
+  #sc007 .prog i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: var(--signal); transform-origin: 0 50%; transform: scaleX(0); }
+  #sc007 .ic .sw { position: absolute; top: 16px; width: 26px; height: 26px; border: 3px solid var(--paper); }
+  #sc007 .ic .s1 { left: 16px; background: var(--signal); }
+  #sc007 .ic .s2 { left: 47px; background: var(--paper); }
+  #sc007 .ic .s3 { left: 78px; background: #6b6b6b; }
+  #sc007 .wv { position: absolute; left: 16px; right: 16px; bottom: 18px; height: 44px; display: flex; align-items: center; gap: 10px; }
+  #sc007 .wv i { flex: 1; height: 100%; background: var(--signal); transform-origin: 50% 50%; }
+</style>
+<script>
+  const S = SC[sid], L1 = S.lines[0], L2 = S.lines[1];
+  const sc = "#sc007";
+  const c = (n) => `${sc} .c${n}`;
+  // pull out: the camera starts close and settles back as the three cards fill the row
+  tl.fromTo(`${sc} .cam`, { scale: 1.07 }, { scale: 1, duration: S.end - S.start, ease: "power2.out" }, S.start);
+  rise(`${sc} .top`, S.start + 0.2, { y: 14, d: 0.4 });
+  const stamp = (el, t) => {
+    tl.fromTo(el, { autoAlpha: 0, scale: 1.18, rotate: -2, boxShadow: "0px 0px 0 #ffd400" }, { autoAlpha: 1, scale: 1, rotate: 0, boxShadow: "14px 14px 0 #ffd400", duration: 0.34, ease: "back.out(2.2)" }, t);
+    rise($$(".tt, .sub", $(el)), t + 0.12, { y: 18, d: 0.4, stagger: 0.06 });
+  };
+  tl.set(`${sc} .crd`, { autoAlpha: 0 }, 0);
+  // 01: review notes go in, the re-render bar fills on "re-renders"
+  stamp(c(1), W(sid, "review") - 0.08);
+  $$(`${c(1)} path`).forEach((p, i) => draw(p, W(sid, "review") + 0.1 + i * 0.12, 0.4));
+  tl.fromTo(`${c(1)} .prog i`, { scaleX: 0 }, { scaleX: 1, duration: Math.max(0.6, L1.off - W(sid, "re-renders") + 0.4), ease: "power2.inOut" }, W(sid, "re-renders"));
+  // 02: the refresh arrow draws, then spins once on "again"
+  stamp(c(2), W(sid, "changed") - 0.08);
+  $$(`${c(2)} path`).forEach((p, i) => draw(p, W(sid, "changed") + 0.1 + i * 0.15, 0.4));
+  tl.fromTo(`${c(2)} .spin`, { rotate: 0 }, { rotate: 360, duration: 0.7, ease: "power3.inOut" }, W(sid, "again"));
+  // 03: lands after the line (data/cues.json stamps it at 50.55 s); swatches and a waveform come alive
+  const t3 = Math.max(L2.off + 0.3, 50.55);
+  stamp(c(3), t3);
+  pop($$(`${c(3)} .sw`), t3 + 0.15, { from: 0, stagger: 0.06 });
+  $$(`${c(3)} .wv i`).forEach((b, i) => {
+    const r = rng(70 + i);
+    for (let t = t3 + 0.2, k = 0; t < S.end - 0.2; t += 0.18, k++) tl.to(b, { scaleY: 0.25 + r() * 0.75, duration: 0.18, ease: "sine.inOut" }, t);
+  });
+</script>

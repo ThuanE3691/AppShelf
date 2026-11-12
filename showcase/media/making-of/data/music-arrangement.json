@@ -1,0 +1,8 @@
+{
+  "source": "scripts/generate-bed.py (synthesised to length; no splicing needed)",
+  "output": "assets/audio/music/bed.wav",
+  "bpm": 112,
+  "beat0": 0,
+  "fadeOut": { "beat": 104, "seconds": 3.5 },
+  "segments": []
+}

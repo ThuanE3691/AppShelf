@@ -1,0 +1,10 @@
+# derived: rebuilt by assemble.py, the renderer, the TTS cache and the footage/audio scripts
+builds/
+renders/
+snapshots/
+.validate/
+data/env.json
+data/.tts-cache/
+data/vo-envelope.json
+assets/footage/
+assets/audio/

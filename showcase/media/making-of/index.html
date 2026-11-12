@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<!--
+  "Making of" ad for the AppShelf demo video (HyperFrames 0.8.77 + GSAP), built with the
+  ak-motion-video skill: Kokoro voice-over (scripts/vo-kokoro.mjs), a synthesised CC0 bed and
+  SFX, timing from scripts/build-timeline.mjs (injected between the TIMING markers).
+  Scenes live in scenes/<sid>.scene.html; scripts/assemble.py splices them into builds/<tag>/.
+  Style: neo-brutalist-web locked to the AppShelf palette (#121212 / #ffd400 / #ffffff) and
+  fonts (Space Grotesk, JetBrains Mono); hard offset shadows, yellow block wipes, energy 3.
+-->
+<html lang="en" data-resolution="landscape" data-ratio="16x9">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>AppShelf demo video: making of</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Space Grotesk"; src: url("assets/fonts/SpaceGrotesk.ttf") format("truetype"); font-weight: 300 700; font-display: block; }
+      @font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono.ttf") format("truetype"); font-weight: 100 800; font-display: block; }
+      :root { --ink: #121212; --ink-2: #1d1d1d; --paper: #ffffff; --signal: #ffd400; --muted: #a3a3a3; --W: 1920px; --H: 1080px; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--ink); }
+      #root { position: relative; width: var(--W); height: var(--H); overflow: hidden; background: var(--ink); color: var(--paper); font-family: "Space Grotesk", sans-serif; }
+      .layer { position: absolute; left: 0; top: 0; width: var(--W); height: var(--H); }
+      .abs { position: absolute; }
+      .scene { opacity: 0; visibility: hidden; }
+      .mono { font-family: "JetBrains Mono", monospace; }
+      .hl .w { display: inline-block; }
+      .draw { stroke-dasharray: 1; stroke-dashoffset: 1; }
+      /* background: a slow-drifting shelf grid (the AppShelf edit's backdrop) */
+      #grid { left: -240px; top: -240px; width: 2400px; height: 1560px; opacity: 0.06;
+        background-image: repeating-linear-gradient(0deg, #fff 0 2px, transparent 2px 120px), repeating-linear-gradient(90deg, #fff 0 2px, transparent 2px 120px); }
+      #flash { background: #fff; opacity: 0; pointer-events: none; }
+      #fade { background: #000; opacity: 1; pointer-events: none; }
+      #slab { background: var(--signal); pointer-events: none; visibility: hidden; transform-origin: 0 50%; }
+      /* shared components */
+      .card { background: var(--paper); color: var(--ink); border: 4px solid var(--paper); box-shadow: 14px 14px 0 var(--signal); }
+      .card-dark { background: var(--ink-2); color: var(--paper); border: 4px solid var(--paper); box-shadow: 14px 14px 0 var(--signal); }
+      .bar-head { display: flex; justify-content: space-between; align-items: center; padding: 16px 26px; background: var(--ink); color: var(--paper); font: 600 22px/1 "JetBrains Mono", monospace; letter-spacing: 0.14em; text-transform: uppercase; }
+      .bar-head .hot { color: var(--signal); }
+      .sticker { padding: 16px 24px; background: var(--signal); color: var(--ink); border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--paper); font: 800 30px/1.1 "JetBrains Mono", monospace; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; }
+      .kicker { font: 700 26px/1 "JetBrains Mono", monospace; letter-spacing: 0.18em; text-transform: uppercase; color: var(--signal); }
+      .rail { left: 0; top: 1004px; width: 1920px; height: 22px; background: var(--signal); transform-origin: 0 50%; }
+      .leg { top: 1026px; width: 24px; height: 54px; background: var(--signal); }
+      /* captions: an ink bar keyed in signal yellow, above the bottom edge */
+      #captions { pointer-events: none; }
+      .cap { position: absolute; left: 0; width: 1920px; bottom: 34px; display: flex; justify-content: center; }
+      .cap-box { display: flex; align-items: stretch; max-width: 1500px; background: var(--ink); border: 3px solid var(--paper); }
+      .cap-box .k { width: 14px; flex: none; background: var(--signal); }
+      .cap-box .t { padding: 12px 26px; font: 500 30px/1.3 "JetBrains Mono", monospace; text-align: center; }
+      .cw { color: var(--paper); }
+      /* scene fragment CSS (scripts/assemble.py splices scenes/<sid>.scene.html styles here) */
+      /*SCENE-CSS:BEGIN*/ /*SCENE-CSS:END*/
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="58.2" data-width="1920" data-height="1080">
+      <div id="bg" class="layer"><div id="grid" class="abs"></div></div>
+      <div id="pulse" class="layer">
+        <div id="stage" class="layer">
+          <!--SCENES:BEGIN--><!--SCENES:END-->
+        </div>
+      </div>
+      <div id="slab" class="layer"></div>
+      <div id="flash" class="layer"></div>
+      <div id="captions" class="layer"></div>
+      <div id="hud-title" class="abs"></div>
+      <div id="fade" class="layer"></div>
+      <audio id="mix" src="assets/audio/mix.m4a" data-start="0" data-duration="58.2" data-track-index="10" data-volume="1"></audio>
+    </div>
+
+    <script>/*TIMING:BEGIN*/window.TIMING={"duration":58.2,"fps":30,"beat0":0,"beatLen":0.535714,"kick":[[4,112]],"drops":[],"outroBeat":104,"scenes":{"s01-hook":{"start":0,"end":4.286,"lines":[{"on":0.35,"off":2.075,"words":[["your",0.35,0.5],["app",0.5,0.725],["needs",0.725,0.962],["a",0.962,1.062],["demo",1.062,1.425],["video",1.425,2.075]]},{"on":2.4,"off":3.675,"words":[["you",2.4,2.5],["don't",2.5,2.725],["need",2.725,2.937],["an",2.937,3.025],["editor",3.025,3.675]]}]},"s02-brief":{"start":4.286,"end":11.25,"lines":[{"on":4.75,"off":6.75,"words":[["describe",4.75,5.188],["the",5.188,5.288],["flow",5.288,5.675],["in",5.675,5.825],["one",5.825,6.025],["message",6.025,6.75]]},{"on":7.95,"off":9.875,"words":[["an",7.95,8.087],["ai",8.087,8.512],["agent",8.512,8.9],["takes",8.9,9.162],["it",9.162,9.25],["from",9.25,9.387],["there",9.387,9.875]]}]},"s03-code":{"start":11.25,"end":19.286,"lines":[{"on":11.65,"off":13.9,"words":[["it",11.65,11.775],["writes",11.775,12.012],["a",12.012,12.087],["script",12.087,12.5],["that",12.5,12.65],["drives",12.65,13.037],["your",13.037,13.15],["real",13.15,13.4],["app",13.4,13.9]]},{"on":14.7,"off":17.2,"words":[["every",14.7,14.975],["click",14.975,15.375],["every",15.475,15.787],["field",15.787,16.175],["every",16.225,16.525],["highlight",16.525,17.2]]}]},"s04-capture":{"start":19.286,"end":28.393,"lines":[{"on":19.75,"off":21.925,"words":[["a",19.75,19.837],["real",19.837,20.15],["browser",20.15,20.75],["runs",20.75,21.037],["your",21.037,21.15],["real",21.15,21.425],["app",21.425,21.925]]},{"on":23.2,"off":24.975,"words":[["and",23.2,23.3],["every",23.3,23.6],["frame",23.6,23.862],["is",23.862,24],["time-stamped",24,24.975]]}]},"s05-cut":{"start":28.393,"end":37.5,"lines":[{"on":28.75,"off":30.05,"words":[["waits",28.75,29.05],["fast-forward",29.05,30.05]]},{"on":30.95,"off":32.625,"words":[["every",30.95,31.262],["scene",31.262,31.587],["fits",31.587,31.812],["its",31.812,32],["line",32,32.625]]},{"on":33.25,"off":36.6,"words":[["zooms",33.25,33.775],["highlights",33.85,34.262],["and",34.262,34.375],["captions",34.375,35.012],["land",35.012,35.312],["on",35.312,35.412],["the",35.412,35.5],["exact",35.5,35.95],["frame",35.95,36.6]]}]},"s06-result":{"start":37.5,"end":45,"lines":[{"on":38.15,"off":40.725,"words":[["out",38.15,38.375],["comes",38.375,38.588],["a",38.588,38.675],["narrated",38.675,39.151],["demo",39.151,39.625],["ready",39.75,40],["to",40,40.101],["post",40.101,40.725]]}]},"s07-iterate":{"start":45,"end":52.5,"lines":[{"on":45.4,"off":47.075,"words":[["you",45.4,45.525],["review",45.525,46],["it",46.075,46.175],["re-renders",46.175,47.075]]},{"on":48.1,"off":50.125,"words":[["changed",48.1,48.412],["your",48.412,48.525],["ui",48.525,49.05],["run",49.212,49.437],["it",49.437,49.512],["again",49.512,50.125]]}]},"s08-end":{"start":52.5,"end":58.2,"lines":[{"on":53,"off":54.275,"words":[["send",53,53.163],["me",53.163,53.263],["your",53.263,53.413],["app's",53.413,53.7],["flow",53.7,54.275]]},{"on":54.75,"off":56.15,"words":[["i'll",54.75,54.95],["send",54.95,55.225],["you",55.225,55.362],["the",55.362,55.45],["video",55.45,56.15]]}]}},"captions":[{"start":0.23,"end":2.24,"words":[["Your",0.35],["app",0.5],["needs",0.725],["a",0.962],["demo",1.062],["video.",1.425]]},{"start":2.28,"end":4.175,"words":[["You",2.4],["don't",2.5],["need",2.725],["an",2.937],["editor.",3.025]]},{"start":4.63,"end":7.25,"words":[["Describe",4.75],["the",5.188],["flow",5.288],["in",5.675],["one",5.825],["message.",6.025]]},{"start":7.83,"end":10.375,"words":[["An",7.95],["AI",8.087],["agent",8.512],["takes",8.9],["it",9.162],["from",9.25],["there.",9.387]]},{"start":11.53,"end":14.4,"words":[["It",11.65],["writes",11.775],["a",12.012],["script",12.087],["that",12.5],["drives",12.65],["your",13.037],["real",13.15],["app:",13.4]]},{"start":14.58,"end":17.7,"words":[["every",14.7],["click,",14.975],["every",15.475],["field,",15.787],["every",16.225],["highlight.",16.525]]},{"start":19.63,"end":22.425,"words":[["A",19.75],["real",19.837],["browser",20.15],["runs",20.75],["your",21.037],["real",21.15],["app,",21.425]]},{"start":23.08,"end":25.475,"words":[["and",23.2],["every",23.3],["frame",23.6],["is",23.862],["time-stamped.",24]]},{"start":28.63,"end":30.55,"words":[["Waits",28.75],["fast-forward.",29.05]]},{"start":30.83,"end":33.09,"words":[["Every",30.95],["scene",31.262],["fits",31.587],["its",31.812],["line.",32]]},{"start":33.13,"end":37.1,"words":[["Zooms,",33.25],["highlights",33.85],["and",34.262],["captions",34.375],["land",35.012],["on",35.312],["the",35.412],["exact",35.5],["frame.",35.95]]},{"start":38.03,"end":41.225,"words":[["Out",38.15],["comes",38.375],["a",38.588],["narrated",38.675],["demo,",39.151],["ready",39.75],["to",40],["post.",40.101]]},{"start":45.28,"end":47.575,"words":[["You",45.4],["review,",45.525],["it",46.075],["re-renders.",46.175]]},{"start":47.98,"end":50.625,"words":[["Changed",48.1],["your",48.412],["UI?",48.525],["Run",49.212],["it",49.437],["again.",49.512]]},{"start":52.88,"end":54.59,"words":[["Send",53],["me",53.163],["your",53.263],["app's",53.413],["flow.",53.7]]},{"start":54.63,"end":56.65,"words":[["I'll",54.75],["send",54.95],["you",55.225],["the",55.362],["video.",55.45]]}],"sfx":[{"sfx":"key","vol":0.22,"t":0.32},{"sfx":"key","vol":0.22,"t":0.425},{"sfx":"key","vol":0.22,"t":0.53},{"sfx":"key","vol":0.22,"t":0.635},{"sfx":"key","vol":0.22,"t":0.74},{"sfx":"key","vol":0.22,"t":0.845},{"sfx":"key","vol":0.22,"t":0.95},{"sfx":"key","vol":0.22,"t":1.055},{"sfx":"key","vol":0.22,"t":1.16},{"sfx":"key","vol":0.22,"t":1.265},{"sfx":"key","vol":0.22,"t":1.37},{"sfx":"key","vol":0.22,"t":1.475},{"sfx":"key","vol":0.22,"t":1.58},{"sfx":"key","vol":0.22,"t":1.685},{"sfx":"key","vol":0.22,"t":1.79},{"sfx":"key","vol":0.22,"t":1.895},{"sfx":"key","vol":0.22,"t":2},{"sfx":"key","vol":0.22,"t":2.42},{"sfx":"key","vol":0.22,"t":2.52},{"sfx":"key","vol":0.22,"t":2.62},{"sfx":"key","vol":0.22,"t":2.72},{"sfx":"key","vol":0.22,"t":2.82},{"sfx":"key","vol":0.22,"t":2.92},{"sfx":"key","vol":0.22,"t":3.02},{"sfx":"key","vol":0.22,"t":3.12},{"sfx":"key","vol":0.22,"t":3.22},{"sfx":"key","vol":0.22,"t":3.32},{"sfx":"key","vol":0.22,"t":3.42},{"sfx":"key","vol":0.22,"t":3.52},{"sfx":"stamp","vol":0.35,"t":3.025},{"sfx":"whoosh","vol":0.4,"t":4.026},{"sfx":"whoosh","vol":0.4,"t":19.026},{"sfx":"whoosh","vol":0.4,"t":37.24},{"sfx":"whoosh","vol":0.4,"t":52.24},{"sfx":"whoosh","vol":0.35,"t":11.05},{"sfx":"whoosh","vol":0.35,"t":28.193},{"sfx":"whoosh","vol":0.35,"t":44.8},{"sfx":"key","vol":0.18,"t":4.78},{"sfx":"key","vol":0.18,"t":4.9},{"sfx":"key","vol":0.18,"t":5.02},{"sfx":"key","vol":0.18,"t":5.14},{"sfx":"key","vol":0.18,"t":5.26},{"sfx":"key","vol":0.18,"t":5.38},{"sfx":"key","vol":0.18,"t":5.5},{"sfx":"key","vol":0.18,"t":5.62},{"sfx":"key","vol":0.18,"t":5.74},{"sfx":"key","vol":0.18,"t":5.86},{"sfx":"key","vol":0.18,"t":5.98},{"sfx":"key","vol":0.18,"t":6.1},{"sfx":"key","vol":0.18,"t":6.22},{"sfx":"key","vol":0.18,"t":6.34},{"sfx":"key","vol":0.18,"t":6.46},{"sfx":"key","vol":0.18,"t":6.58},{"sfx":"pop","vol":0.35,"t":8.512},{"sfx":"tick","vol":0.3,"t":8.3},{"sfx":"tick","vol":0.3,"t":8.9},{"sfx":"tick","vol":0.3,"t":9.5},{"sfx":"tick","vol":0.3,"t":10.1},{"sfx":"tick","vol":0.3,"t":10.7},{"sfx":"pop","vol":0.22,"t":12.65},{"sfx":"pop","vol":0.22,"t":14.975},{"sfx":"pop","vol":0.22,"t":15.787},{"sfx":"pop","vol":0.22,"t":16.525},{"sfx":"stamp","vol":0.4,"t":24},{"sfx":"whoosh","vol":0.3,"t":29.05},{"sfx":"stamp","vol":0.3,"t":32},{"sfx":"pop","vol":0.25,"t":33.25},{"sfx":"pop","vol":0.25,"t":33.85},{"sfx":"pop","vol":0.25,"t":34.375},{"sfx":"stamp","vol":0.4,"t":35.95},{"sfx":"stamp","vol":0.35,"t":40.101},{"sfx":"stamp","vol":0.35,"t":45.525},{"sfx":"stamp","vol":0.35,"t":48.1},{"sfx":"stamp","vol":0.35,"t":50.55},{"sfx":"pop","vol":0.3,"t":53.7},{"sfx":"stamp","vol":0.35,"t":55.45}],"env":[0,0,0,0,0,0,0,0,0,0,0,0.02,0.52,1,0.98,0.67,0.95,0.86,0.81,0.87,0.09,0.01,0.08,0.65,0.99,0.97,1,0.43,0.58,0.68,0.76,0.33,0.11,0.01,0.54,0.9,0.75,0.72,1,1,1,1,0.79,0.29,0.11,0.71,0.72,0.29,0.28,0.21,0.24,0.24,0.19,0.13,0.11,0.04,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.01,0.28,0.93,0.87,0.65,1,1,1,0.75,0.25,0.26,0.8,1,1,0.99,0.82,0.38,0.97,0.59,0.36,0.49,0.72,1,0.28,0.61,0.47,0.13,0.28,0.29,0.24,0.13,0.17,0.07,0.02,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.01,0.72,1,0.7,0.63,0.47,0.08,0.73,1,1,1,1,0.66,0.18,0.6,0.61,0.1,0.09,0.08,0.5,0.93,0.86,0.83,0.7,0.69,0.59,0.48,0.04,0.03,0.79,0.97,0.81,0.76,0.57,0.74,0.96,0.84,1,1,1,0.99,0.82,0.5,0.36,0.32,0.18,0.34,0.22,0.18,0.07,0.09,0.32,0.29,0.1,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.18,1,1,0.59,0.03,0.77,1,1,1,1,1,1,1,1,1,0.71,0.19,0.01,0.49,0.88,0.98,1,0.3,0.44,0.73,0.92,0.53,0.22,0.05,0.52,0.17,0.26,0.94,0.57,0.09,0.48,0.57,0.7,0.09,0.08,0.11,0.58,0.75,0.68,0.45,0.33,0.23,0.21,0.17,0.12,0.12,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.74,1,0.54,0.32,1,1,1,0.72,0.04,0.4,0.58,0.68,0.56,0.43,0.46,0.14,0.06,0.65,1,0.85,0.37,0.02,0.02,0.1,0.04,0.01,0.61,0.62,0.14,0.1,0.21,0.45,0.83,0.79,0.65,0.76,0.88,1,0.75,0.36,0.42,0.39,0.9,0.68,0.37,0.42,0.73,0.73,0.76,0.72,0.56,0.53,0.46,0.46,0.28,0.22,0.19,0.06,0.01,0,0.04,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.81,1,0.89,0.28,0.63,1,0.75,0.06,0.13,0.15,0.09,1,0.89,0.58,0.25,0.01,0.07,0.05,0.01,0,0,0,0,0,1,1,0.83,0.31,0.76,1,0.97,0.41,0.19,0.13,0.09,0.73,0.81,0.72,0.62,0.54,0.49,0.61,0.33,0.35,0.22,0.01,0.7,0.9,1,0.28,0.28,0.85,0.84,0.69,0.36,0.24,0.57,0.72,0.54,0.36,0.28,0.35,0.28,0.18,0.18,0.03,0.15,0.38,0.03,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.39,0.97,0.58,0.3,0.26,0.72,0.84,0.79,0.78,0.8,0.81,0.33,0.11,0.07,0.48,0.65,0.56,0.5,0.57,0.53,0.38,0.49,0.31,0.3,0.23,0.18,0.06,0.01,0,0,0,0.12,0.35,0.96,0.91,0.92,1,0.98,0.65,0.4,0.67,0.58,0.3,0.29,0.67,0.6,0.66,0.57,0.45,0.26,0.28,0.45,0.34,0.28,0.19,0.06,0.04,0,0.05,0.02,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.01,0.97,1,0.57,0.42,1,1,0.56,0.2,0.69,0.79,0.59,0.13,0.09,0.06,0.68,0.8,0.71,0.68,0.69,0.66,0.63,0.39,0.37,0.22,0.19,0.18,0.3,0.58,0.6,0.65,0.76,0.45,0.3,0.31,0.03,0.5,0.56,0.37,0.24,0.18,0.17,0.1,0.03,0.01,0.12,0.08,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.25,0.63,1,1,1,0.88,0.5,0.03,0.48,0.41,0.17,0.05,1,0.96,0.84,0.7,0.34,0.35,0.16,0.07,0.05,0.79,0.86,0.85,0.82,0.47,0.44,0.33,0.28,0.23,0.25,0.15,0.11,0.04,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.51,1,1,0.58,0.3,0.59,0.8,0.78,0.55,0.39,0.32,0.3,0.44,0.9,0.92,0.86,0.74,0.66,0.47,0.07,0.04,0.51,0.94,0.19,0.02,0.35,0.53,0.49,0.07,0.21,0.31,0.09,0.48,0.74,0.87,0.67,0.51,0.32,0.19,0.17,0.13,0.16,0.14,0.02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.18,0.29,0.52,1,1,1,0.99,0.97,0.82,0.8,0.68,0.56,0.3,0.29,0.16,0.02,0,0,0,0.01,0.1,0.58,1,1,0.78,0.8,1,0.83,0.77,0.1,0.22,0.29,0.6,0.64,0.46,0.15,0.13,0.25,0.5,0.62,0.31,0.01,0.18,0.33,0.3,0.42,0.37,0.36,0.38,0.46,0.32,0.28,0.07,0.01,0.1,0.38,0.65,0.68,0.71,0.81,0.88,0.87,0.62,0.74,0.86,0.6,0.69,0.63,0.56,0.53,0.23,0.1,0.16,0.24,0.61,0.87,0.66,0.4,0.18,0.01,0.04,0.2,0.07,0.04,0.2,0.61,0.51,0.3,0.19,0.12,0.07,0.08,0.09,0.06,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.94,1,1,1,0.52,0.09,0.02,0.19,0.19,0.7,0.91,1,0.7,0.59,1,0.94,0.83,0.75,0.68,0.64,0.67,0.61,0.7,0.79,0.78,0.7,0.34,0.85,0.62,0.23,0.06,0.27,0.72,0.59,0.52,0.43,0.34,0.24,0.2,0.18,0.21,0.19,0.01,0.01,0,0,0,0,0,0.35,1,1,0.59,0.8,0.7,0.34,0.37,0.51,0.11,0.09,0.1,0.38,0.67,0.36,0.14,0.08,0.17,0.33,0.43,0.29,0.15,0.1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.01,0.34,1,1,0.52,0.69,1,0.93,0.27,0.1,0.44,0.73,0.74,0.8,0.81,0.6,0.38,0.18,0.02,0,0,0.38,0.51,0.15,0.09,0.48,0.67,0.64,0.57,0.21,0.73,0.95,0.8,0.75,0.76,0.39,0.37,0.24,0.19,0.09,0.09,0.36,0.4,0.38,0.22,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.23,0.47,0.29,1,1,0.95,0.9,0.84,0.53,0.21,0.34,0.54,0.67,0.57,0.42,0.67,0.84,0.65,0.59,0.65,0.59,0.46,0.4,0.3,0.25,0.28,0.1,0.01,0.01,0,0,0,0,0,0.21,0.39,0.96,1,1,1,1,1,0.41,0.8,0.45,0.1,0.49,0.49,0.3,0.2,0.17,0.13,0.11,0.1,0.05,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.03,0.2,0.27,0.61,0.84,0.88,0.94,0.91,0.69,0.61,0.55,0.68,0.59,0.29,0.23,0.6,0.46,0.53,0.4,0.01,0.21,0.3,0.18,0.04,0.03,0.4,0.47,0.36,0.24,0.16,0.16,0.11,0.12,0.13,0.02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,0.86,0.78,0.72,0.34,0.29,0.32,0.27,0.31,0.52,0.7,0.67,0.73,0.81,0.44,0.32,0.52,0.69,0.28,0.24,0.51,0.16,0.08,0.69,0.68,0.19,0.5,0.27,0.24,0.18,0.2,0.14,0.13,0.13,0.1,0.02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]};/*TIMING:END*/</script>
+    <script>
+      (() => {
+        const T = window.TIMING;
+        const tl = gsap.timeline({ paused: true });
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+
+        // ---------- lookups: every time comes from TIMING, never from wall clock ----------
+        const $ = (s, r = document) => r.querySelector(s);
+        const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+        const SC = T.scenes;
+        const B = (n) => T.beat0 + T.beatLen * n; // time of quarter note n
+        const isKick = (n) => T.kick.some(([a, b]) => n >= a && n < b);
+        const hit = (sid, word, nth) => {
+          const h = SC[sid].lines.flatMap((l) => l.words).filter((w) => w[0] === word)[nth - 1];
+          if (!h) console.warn(`[timing] "${word}" #${nth} missing in ${sid}`);
+          return h;
+        };
+        const W = (sid, word, nth = 1) => (hit(sid, word, nth) || [0, SC[sid].start])[1]; // word onset
+        const WE = (sid, word, nth = 1) => (hit(sid, word, nth) || [0, 0, SC[sid].start])[2]; // word end
+        // seeded PRNG: Math.random would make every render different
+        const rng = (seed) => () => {
+          seed = (seed + 0x6d2b79f5) | 0;
+          let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+
+        // ---------- build the DOM before any tween ----------
+        // headline words become spans for staggered entrances; inline accents (<em>, <b>) keep their tag
+        const splitWords = (el) =>
+          Array.from(el.childNodes).forEach((n) => {
+            if (n.nodeType === 1) return n.namespaceURI === "http://www.w3.org/2000/svg" ? undefined : splitWords(n);
+            if (n.nodeType !== 3) return;
+            const frag = document.createDocumentFragment();
+            n.textContent.split(/([ \t\r\n]+)/).forEach((p) => {
+              if (!p) return;
+              if (/^[ \t\r\n]+$/.test(p)) return frag.append(" ");
+              const s = document.createElement("span");
+              s.className = "w";
+              s.textContent = p;
+              frag.append(s);
+            });
+            n.replaceWith(frag);
+          });
+        $$(".hl").forEach(splitWords);
+        // odometer: <span class="odo" data-value="40%"></span> gets one 0-9 reel per digit
+        $$(".odo").forEach((o) => {
+          o.setAttribute("data-layout-allow-overflow", ""); // reels clip on purpose
+          const reel = Array.from({ length: 20 }, (_, i) => `<i>${i % 10}</i>`).join("");
+          if (o.dataset.value == null) console.warn("[odo] missing data-value", o);
+          o.innerHTML = Array.from(o.dataset.value ?? "").map((ch) => (/\d/.test(ch) ? `<span class="odo-d"><span class="odo-s">${reel}</span></span>` : `<span>${ch}</span>`)).join("");
+        });
+
+        // ---------- animation vocabulary ----------
+        const pop = (e, t, o = {}) => tl.fromTo(e, { autoAlpha: 0, scale: o.from ?? 0.4 }, { autoAlpha: 1, scale: 1, duration: o.d ?? 0.45, ease: o.ease ?? "back.out(2.2)", stagger: o.stagger ?? 0 }, t);
+        const rise = (e, t, o = {}) => tl.fromTo(e, { autoAlpha: 0, y: o.y ?? 40 }, { autoAlpha: 1, y: 0, duration: o.d ?? 0.5, ease: o.ease ?? "power3.out", stagger: o.stagger ?? 0 }, t);
+        const draw = (e, t, d = 0.6, ease = "power2.inOut") => tl.fromTo(e, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: d, ease }, t);
+        const slideX = (e, t, o = {}) => tl.fromTo(e, { autoAlpha: 0, x: o.x ?? -80 }, { autoAlpha: 1, x: 0, duration: o.d ?? 0.5, ease: o.ease ?? "expo.out", stagger: o.stagger ?? 0 }, t);
+        const flipIn = (e, t, o = {}) => tl.fromTo(e, { autoAlpha: 0, rotationX: o.rot ?? -80, transformPerspective: 1200, transformOrigin: "50% 100%" }, { autoAlpha: 1, rotationX: 0, duration: o.d ?? 0.6, ease: o.ease ?? "back.out(1.4)", stagger: o.stagger ?? 0 }, t);
+        const fadeOut = (e, t, o = {}) => tl.to(e, { autoAlpha: 0, y: o.y ?? 0, duration: o.d ?? 0.3, ease: "power2.in" }, t);
+        // bump: a quick scale accent on a word or a beat
+        const bump = (e, t, o = {}) => {
+          tl.to(e, { scale: o.s ?? 1.08, duration: 0.08, ease: "power2.out" }, t);
+          tl.to(e, { scale: 1, duration: 0.3, ease: "power2.out" }, t + 0.08);
+        };
+        // typeIn: stepped clip reveal, one step per character (counts toward the clip-path budget)
+        const typeIn = (e, t, o = {}) => {
+          const el = typeof e === "string" ? $(e) : e;
+          const n = Math.max(1, el.textContent.replace(/\s+/g, " ").trim().length), d = o.d ?? n * 0.035; // steps match glyphs in monospace
+          tl.fromTo(el, { clipPath: "inset(-20% 100% -20% 0%)" }, { clipPath: "inset(-20% 0% -20% 0%)", duration: d, ease: `steps(${n})` }, t);
+          tl.set(el, { clipPath: "none" }, t + d);
+        };
+        // odo: reels roll into the value from data-value; the last digit spins one extra turn
+        const odo = (e, t, o = {}) => {
+          const el = typeof e === "string" ? $(e) : e;
+          const digits = Array.from(el.dataset.value ?? "").filter((c) => /\d/.test(c)).map(Number);
+          $$(".odo-s", el).forEach((s, i) => {
+            const idx = digits[i] + (i === digits.length - 1 ? 10 : 0);
+            tl.fromTo(s, { yPercent: 0 }, { yPercent: -idx * 5, duration: (o.d ?? 1.1) + i * 0.08, ease: o.ease ?? "power3.out" }, t);
+          });
+        };
+        // envKeys: keyframes from the voice envelope, e.g. envKeys(".m-mouth", on, off, 2 / 30, (v) => ({ scaleY: 0.2 + v }))
+        const envKeys = (e, t0, t1, step, map) => {
+          for (let t = t0; t < t1; t += step) {
+            const v = T.env[Math.min(T.env.length - 1, Math.round(t * T.fps))] ?? 0;
+            tl.to(e, { ...map(v), duration: step, ease: "none" }, t);
+          }
+        };
+        // juicy vocabulary (references/motion-craft.md): anticipation, impact, smear, follow-through
+        const FR = 1 / 30; // one frame
+        // slam: lands oversized and blurred on t, squashes, settles. Energy 4-5 by default;
+        // { soft: true } is the energy-3 version (smaller squash, back.out instead of elastic)
+        const slam = (e, t, o = {}) => {
+          const q = o.soft ? 0.5 : 1, t0 = Math.max(0, t - (o.d ?? 0.22)); // a tween before 0 would shift the whole timeline
+          tl.fromTo(e, { autoAlpha: 0, scale: o.from ?? (o.soft ? 1.25 : 1.6), filter: `blur(${12 * q}px)` }, { autoAlpha: 1, scale: 1 - 0.06 * q, filter: "blur(0px)", duration: Math.max(FR, t - t0), ease: "expo.in" }, t0);
+          tl.to(e, { scaleX: 1 + 0.06 * q, scaleY: 1 - 0.08 * q, duration: 3 * FR, ease: "power2.out" }, t);
+          tl.to(e, { scaleX: 1, scaleY: 1, duration: 0.5, ease: o.soft ? "back.out(1.4)" : "elastic.out(1, 0.45)" }, t + 3 * FR);
+          tl.set(e, { filter: "none" }, t + 4 * FR);
+        };
+        // smear: fast travel with skew (motion blur without a filter), then a damped settle
+        const smear = (e, t, o = {}) => {
+          const dx = o.dx ?? -260;
+          tl.fromTo(e, { autoAlpha: 0, x: dx, skewX: dx < 0 ? -18 : 18 }, { autoAlpha: 1, x: 0, skewX: 0, duration: o.d ?? 0.34, ease: "expo.out", stagger: o.stagger ?? 0 }, t);
+        };
+        // lineIn: words rise out of an overflow:hidden line mask with overlap
+        const lineIn = (e, t, o = {}) => tl.fromTo(e, { yPercent: 110, rotate: o.rot ?? 4 }, { yPercent: 0, rotate: 0, duration: o.d ?? 0.6, ease: "expo.out", stagger: { each: o.each ?? 0.06, ease: "power1.in" } }, t);
+        // settleCam: slow camera push over a hold so no frame is dead (finite, seek-safe)
+        const settleCam = (e, t0, t1, amt = 0.035) => tl.fromTo(e, { scale: 1 }, { scale: 1 + amt, duration: Math.max(0.1, t1 - t0), ease: "none" }, t0);
+        // shake: seeded, decaying; x/y only so layout never reflows. Energy 4-5 only
+        const shake = (e, t, o = {}) => {
+          const r = rng(o.seed ?? 7), n = o.n ?? 6, amp = o.amp ?? 14;
+          for (let i = 0; i < n; i++) {
+            const k = amp * (1 - i / n);
+            tl.to(e, { x: (r() - 0.5) * 2 * k, y: (r() - 0.5) * 2 * k, duration: FR, ease: "none" }, t + i * FR);
+          }
+          tl.to(e, { x: 0, y: 0, duration: 2 * FR, ease: "power2.out" }, t + n * FR);
+        };
+        const flash = (t, a = 0.45) => {
+          // fromTo with explicit values: overlapping flashes render the same whatever the seek order
+          tl.fromTo("#flash", { opacity: 0 }, { opacity: a, duration: 0.03, ease: "none", immediateRender: false }, t);
+          tl.fromTo("#flash", { opacity: a }, { opacity: 0, duration: 0.35, ease: "power2.out", immediateRender: false }, t + 0.03);
+        };
+        const intro = (sc, t) => {
+          const ws = $$(".hl .w", sc);
+          if (ws.length) tl.fromTo(ws, { autoAlpha: 0, yPercent: 60 }, { autoAlpha: 1, yPercent: 0, duration: 0.42, ease: "power3.out", stagger: 0.05 }, t + 0.05);
+        };
+
+        // ---------- background drift and beat reactions ----------
+        tl.fromTo("#fade", { opacity: 1 }, { opacity: 0, duration: 0.3 }, 0);
+        tl.fromTo("#grid", { x: 0, y: 0 }, { x: -120, y: -60, duration: T.duration, ease: "none" }, 0);
+        for (let n = 0; B(n) < T.duration && n < T.outroBeat; n++) {
+          if (!isKick(n) || n % 4) continue;
+          tl.to("#pulse", { scale: 1.01, duration: 0.05, ease: "power1.out" }, B(n));
+          tl.to("#pulse", { scale: 1, duration: 0.33, ease: "power2.out" }, B(n) + 0.05);
+        }
+
+        // ---------- scene windows: [selector, scene id, transition in] ----------
+        // wipe: a signal-yellow slab sweeps in from the left, the scenes swap under it, it leaves to the right
+        // shove: the new scene pushes the old one off to the left (neo-brutalist card shove)
+        const WINDOWS = [
+          ["#sc001", "s01-hook", "none"],
+          ["#sc002", "s02-brief", "wipe"],
+          ["#sc003", "s03-code", "shove"],
+          ["#sc004", "s04-capture", "wipe"],
+          ["#sc005", "s05-cut", "shove"],
+          ["#sc006", "s06-result", "wipe"],
+          ["#sc007", "s07-iterate", "shove"],
+          ["#sc008", "s08-end", "wipe"],
+        ];
+        const WIN = WINDOWS.filter(([, sid]) => SC[sid]);
+        WIN.forEach(([sel, sid, kind], i) => {
+          const sc = $(sel);
+          const t0 = SC[sid].start;
+          const prev = i ? $(WIN[i - 1][0]) : null;
+          if (kind === "wipe" && prev) {
+            tl.fromTo("#slab", { visibility: "visible", scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 0.24, ease: "expo.in", immediateRender: false }, Math.max(0, t0 - 0.24));
+            tl.set(prev, { autoAlpha: 0 }, t0);
+            tl.set(sc, { autoAlpha: 1, x: 0 }, t0);
+            tl.fromTo("#slab", { scaleX: 1, transformOrigin: "100% 50%" }, { scaleX: 0, duration: 0.36, ease: "expo.out", immediateRender: false }, t0);
+            tl.set("#slab", { visibility: "hidden" }, t0 + 0.36);
+          } else if (kind === "shove" && prev) {
+            tl.fromTo(prev, { x: 0 }, { x: -1920, duration: 0.42, ease: "power4.inOut", immediateRender: false }, t0 - 0.18);
+            tl.set(prev, { autoAlpha: 0 }, t0 + 0.24);
+            tl.fromTo(sc, { autoAlpha: 1, x: 1920 }, { autoAlpha: 1, x: 0, duration: 0.42, ease: "power4.inOut", immediateRender: false }, t0 - 0.18);
+          } else {
+            tl.set(sc, { autoAlpha: 1 }, t0);
+          }
+        });
+
+        // ---------- per-scene choreography ----------
+        /*SCENE-JS:BEGIN*/ /*SCENE-JS:END*/
+
+        // ---------- captions (English): only over the middle scenes, the hook and end card are type ----------
+        const capLayer = $("#captions");
+        const capFrom = SC["s02-brief"] ? SC["s02-brief"].start : 0;
+        const capTo = SC["s08-end"] ? SC["s08-end"].start : T.duration;
+        T.captions.filter((c) => c.start >= capFrom - 0.2 && c.start < capTo).forEach((c) => {
+          const cap = document.createElement("div");
+          cap.className = "cap";
+          const box = document.createElement("div");
+          box.className = "cap-box";
+          const k = document.createElement("div");
+          k.className = "k";
+          const txt = document.createElement("div");
+          txt.className = "t";
+          const spans = c.words.map(([w], j) => {
+            if (j) txt.append(" ");
+            const s = document.createElement("span");
+            s.className = "cw";
+            s.textContent = w;
+            txt.append(s);
+            return s;
+          });
+          box.append(k, txt);
+          cap.append(box);
+          capLayer.append(cap);
+          tl.fromTo(cap, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.14, ease: "power2.out" }, Math.max(capFrom + 0.3, c.start));
+          tl.to(cap, { autoAlpha: 0, duration: 0.12, ease: "power1.in" }, Math.min(capTo - 0.3, Math.max(c.start + 0.3, c.end - 0.12)));
+          c.words.forEach(([, s], j) => {
+            tl.to(spans[j], { color: "#ffd400", duration: 0.05 }, s);
+            const next = j < c.words.length - 1 ? c.words[j + 1][1] : Math.max(s + 0.35, c.end - 0.4);
+            tl.to(spans[j], { color: "#ffffff", duration: 0.12 }, next);
+          });
+        });
+
+        tl.to("#fade", { opacity: 1, duration: 0.8, ease: "power1.in" }, T.duration - 0.8);
+        tl.set({}, {}, T.duration); // pin the timeline length to the video duration
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,398 @@
+[
+{
+"sfx": "key",
+"abs": 0.32,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 0.425,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 0.53,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 0.635,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 0.74,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 0.845,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 0.95,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 1.055,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 1.16,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 1.265,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 1.37,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 1.475,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 1.58,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 1.685,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 1.79,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 1.895,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 2.0,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 2.42,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 2.52,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 2.62,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 2.72,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 2.82,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 2.92,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 3.02,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 3.12,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 3.22,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 3.32,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 3.42,
+"vol": 0.22
+},
+{
+"sfx": "key",
+"abs": 3.52,
+"vol": 0.22
+},
+{
+"sfx": "stamp",
+"vol": 0.35,
+"abs": 3.57
+},
+{
+"sfx": "whoosh",
+"abs": 4.026,
+"vol": 0.4
+},
+{
+"sfx": "whoosh",
+"abs": 19.026,
+"vol": 0.4
+},
+{
+"sfx": "whoosh",
+"abs": 37.24,
+"vol": 0.4
+},
+{
+"sfx": "whoosh",
+"abs": 52.24,
+"vol": 0.4
+},
+{
+"sfx": "whoosh",
+"abs": 11.05,
+"vol": 0.35
+},
+{
+"sfx": "whoosh",
+"abs": 28.193,
+"vol": 0.35
+},
+{
+"sfx": "whoosh",
+"abs": 44.8,
+"vol": 0.35
+},
+{
+"sfx": "key",
+"abs": 4.78,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 4.9,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 5.02,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 5.14,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 5.26,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 5.38,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 5.5,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 5.62,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 5.74,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 5.86,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 5.98,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 6.1,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 6.22,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 6.34,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 6.46,
+"vol": 0.18
+},
+{
+"sfx": "key",
+"abs": 6.58,
+"vol": 0.18
+},
+{
+"sfx": "pop",
+"vol": 0.35,
+"abs": 7.95
+},
+{
+"sfx": "tick",
+"abs": 8.3,
+"vol": 0.3
+},
+{
+"sfx": "tick",
+"abs": 8.9,
+"vol": 0.3
+},
+{
+"sfx": "tick",
+"abs": 9.5,
+"vol": 0.3
+},
+{
+"sfx": "tick",
+"abs": 10.1,
+"vol": 0.3
+},
+{
+"sfx": "tick",
+"abs": 10.7,
+"vol": 0.3
+},
+{
+"sfx": "pop",
+"scene": "s03-code",
+"word": "drives",
+"vol": 0.22
+},
+{
+"sfx": "pop",
+"scene": "s03-code",
+"word": "click",
+"vol": 0.22
+},
+{
+"sfx": "pop",
+"scene": "s03-code",
+"word": "field",
+"vol": 0.22
+},
+{
+"sfx": "pop",
+"scene": "s03-code",
+"word": "highlight",
+"vol": 0.22
+},
+{
+"sfx": "stamp",
+"scene": "s04-capture",
+"word": "time-stamped",
+"vol": 0.4
+},
+{
+"sfx": "whoosh",
+"scene": "s05-cut",
+"word": "fast-forward",
+"vol": 0.3
+},
+{
+"sfx": "stamp",
+"scene": "s05-cut",
+"word": "line",
+"vol": 0.3
+},
+{
+"sfx": "pop",
+"scene": "s05-cut",
+"word": "zooms",
+"vol": 0.25
+},
+{
+"sfx": "pop",
+"scene": "s05-cut",
+"word": "highlights",
+"vol": 0.25
+},
+{
+"sfx": "pop",
+"scene": "s05-cut",
+"word": "captions",
+"vol": 0.25
+},
+{
+"sfx": "stamp",
+"scene": "s05-cut",
+"word": "frame",
+"vol": 0.4
+},
+{
+"sfx": "stamp",
+"scene": "s06-result",
+"word": "post",
+"vol": 0.35
+},
+{
+"sfx": "stamp",
+"scene": "s07-iterate",
+"word": "review",
+"vol": 0.35
+},
+{
+"sfx": "stamp",
+"scene": "s07-iterate",
+"word": "changed",
+"vol": 0.35
+},
+{
+"sfx": "stamp",
+"abs": 50.55,
+"vol": 0.35
+},
+{
+"sfx": "pop",
+"scene": "s08-end",
+"word": "flow",
+"vol": 0.3
+},
+{
+"sfx": "stamp",
+"scene": "s08-end",
+"word": "video",
+"vol": 0.35
+}
+]
