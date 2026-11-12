@@ -86,6 +86,16 @@ jobs:
     permissions:
       contents: read
       packages: write
+    # Bake reads the compose files, whose required secrets use ${VAR:?}. These
+    # dummy values only satisfy interpolation; they are runtime environment and
+    # never end up in the images.
+    env:
+      POSTGRES_PASSWORD: ci-dummy
+      MARIADB_PASSWORD: ci-dummy
+      MARIADB_ROOT_PASSWORD: ci-dummy
+      WP_NETWORK_ADMIN_PASSWORD: ci-dummy
+      STRIPE_SECRET_KEY: ci-dummy
+      TUNNEL_TOKEN: ci-dummy
     steps:
       - uses: actions/checkout@v7
       - name: Pick compose files and targets
