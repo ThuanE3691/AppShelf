@@ -1,0 +1,95 @@
+<section id="sc003" class="scene layer">
+  <div class="abs editor card-dark">
+    <div class="bar-head"><span>flow.mjs</span><span class="hot">written by the agent</span></div>
+    <div class="view" data-layout-allow-overflow>
+      <div class="code">
+<div class="cl" data-n="1" data-len="53"><b class="sw"></b><span class="no">1</span><span class="tx"><span class="c">// flow.mjs · written by the AI agent from your brief</span></span></div>
+<div class="cl" data-n="2" data-len="39"><b class="sw"></b><span class="no">2</span><span class="tx"><span class="k">import</span> <span class="p">{</span> readFileSync <span class="p">}</span> <span class="k">from</span> <span class="s">&quot;node:fs&quot;</span><span class="p">;</span></span></div>
+<div class="cl" data-n="3" data-len="43"><b class="sw"></b><span class="no">3</span><span class="tx"><span class="k">import</span> <span class="p">{</span> chromium <span class="p">}</span> <span class="k">from</span> <span class="s">&quot;playwright-core&quot;</span><span class="p">;</span></span></div>
+<div class="cl" data-n="4" data-len="50"><b class="sw"></b><span class="no">4</span><span class="tx"><span class="k">import</span> <span class="p">{</span> createCapture <span class="p">}</span> <span class="k">from</span> <span class="s">&quot;./capture-lib.mjs&quot;</span><span class="p">;</span></span></div>
+<div class="cl" data-n="5" data-len="0"><b class="sw"></b><span class="no">5</span><span class="tx"></span></div>
+<div class="cl" data-n="6" data-len="61"><b class="sw"></b><span class="no">6</span><span class="tx"><span class="k">const</span> config <span class="p">=</span> JSON<span class="p">.</span><span class="f">parse</span><span class="p">(</span><span class="f">readFileSync</span><span class="p">(</span><span class="s">&quot;data/browser.json&quot;</span><span class="p">)</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="7" data-len="54"><b class="sw"></b><span class="no">7</span><span class="tx"><span class="k">const</span> cap <span class="p">=</span> <span class="k">await</span> <span class="f">createCapture</span><span class="p">(</span>config<span class="p">,</span> <span class="p">{</span> chromium <span class="p">}</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="8" data-len="51"><b class="sw"></b><span class="no">8</span><span class="tx"><span class="k">const</span> <span class="p">{</span> beat<span class="p">,</span> click<span class="p">,</span> type<span class="p">,</span> highlight<span class="p">,</span> fast <span class="p">}</span> <span class="p">=</span> cap<span class="p">;</span></span></div>
+<div class="cl" data-n="9" data-len="44"><b class="sw"></b><span class="no">9</span><span class="tx"><span class="k">const</span> page <span class="p">=</span> <span class="k">await</span> cap<span class="p">.</span><span class="f">open</span><span class="p">(</span>config<span class="p">.</span>app<span class="p">.</span>url<span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="10" data-len="0"><b class="sw"></b><span class="no">10</span><span class="tx"></span></div>
+<div class="cl" data-n="11" data-len="21"><b class="sw"></b><span class="no">11</span><span class="tx"><span class="k">await</span> <span class="f">beat</span><span class="p">(</span><span class="s">&quot;signup&quot;</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="12" data-len="61"><b class="sw"></b><span class="no">12</span><span class="tx"><span class="k">await</span> <span class="f">click</span><span class="p">(</span>page<span class="p">.</span><span class="f">getByRole</span><span class="p">(</span><span class="s">&quot;link&quot;</span><span class="p">,</span> <span class="p">{</span> name<span class="p">:</span> <span class="s">&quot;Get started&quot;</span> <span class="p">}</span><span class="p">)</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="13" data-len="69"><b class="sw"></b><span class="no">13</span><span class="tx"><span class="k">await</span> <span class="f">type</span><span class="p">(</span>page<span class="p">.</span><span class="f">locator</span><span class="p">(</span><span class="s">&quot;#email&quot;</span><span class="p">)</span><span class="p">,</span> <span class="s">`demo-${Date.now()}@example.com`</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="14" data-len="66"><b class="sw"></b><span class="no">14</span><span class="tx"><span class="k">await</span> <span class="f">click</span><span class="p">(</span>page<span class="p">.</span><span class="f">getByRole</span><span class="p">(</span><span class="s">&quot;button&quot;</span><span class="p">,</span> <span class="p">{</span> name<span class="p">:</span> <span class="s">&quot;Create account&quot;</span> <span class="p">}</span><span class="p">)</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="15" data-len="0"><b class="sw"></b><span class="no">15</span><span class="tx"></span></div>
+<div class="cl" data-n="16" data-len="18"><b class="sw"></b><span class="no">16</span><span class="tx"><span class="k">await</span> <span class="f">beat</span><span class="p">(</span><span class="s">&quot;pay&quot;</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="17" data-len="59"><b class="sw"></b><span class="no">17</span><span class="tx"><span class="k">await</span> <span class="f">click</span><span class="p">(</span>page<span class="p">.</span><span class="f">getByRole</span><span class="p">(</span><span class="s">&quot;button&quot;</span><span class="p">,</span> <span class="p">{</span> name<span class="p">:</span> <span class="s">&quot;Upgrade&quot;</span> <span class="p">}</span><span class="p">)</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="18" data-len="56"><b class="sw"></b><span class="no">18</span><span class="tx"><span class="k">await</span> <span class="f">fast</span><span class="p">(</span><span class="p">(</span><span class="p">)</span> <span class="p">=</span><span class="p">&gt;</span> page<span class="p">.</span><span class="f">locator</span><span class="p">(</span><span class="s">&quot;#cardNumber&quot;</span><span class="p">)</span><span class="p">.</span><span class="f">waitFor</span><span class="p">(</span><span class="p">)</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="19" data-len="41"><b class="sw"></b><span class="no">19</span><span class="tx"><span class="k">const</span> card <span class="p">=</span> page<span class="p">.</span><span class="f">locator</span><span class="p">(</span><span class="s">&quot;#cardNumber&quot;</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="20" data-len="40"><b class="sw"></b><span class="no">20</span><span class="tx"><span class="k">await</span> <span class="f">type</span><span class="p">(</span>card<span class="p">,</span> <span class="s">&quot;4242 4242 4242 4242&quot;</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="21" data-len="42"><b class="sw"></b><span class="no">21</span><span class="tx"><span class="k">const</span> price <span class="p">=</span> page<span class="p">.</span><span class="f">locator</span><span class="p">(</span><span class="s">&quot;.plan-price&quot;</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="22" data-len="23"><b class="sw"></b><span class="no">22</span><span class="tx"><span class="k">await</span> <span class="f">highlight</span><span class="p">(</span>price<span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="23" data-len="49"><b class="sw"></b><span class="no">23</span><span class="tx"><span class="k">await</span> <span class="f">click</span><span class="p">(</span>page<span class="p">.</span><span class="f">locator</span><span class="p">(</span><span class="s">&quot;button[type=submit]&quot;</span><span class="p">)</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="24" data-len="0"><b class="sw"></b><span class="no">24</span><span class="tx"></span></div>
+<div class="cl" data-n="25" data-len="19"><b class="sw"></b><span class="no">25</span><span class="tx"><span class="k">await</span> <span class="f">beat</span><span class="p">(</span><span class="s">&quot;live&quot;</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="26" data-len="51"><b class="sw"></b><span class="no">26</span><span class="tx"><span class="k">await</span> <span class="f">fast</span><span class="p">(</span><span class="p">(</span><span class="p">)</span> <span class="p">=</span><span class="p">&gt;</span> page<span class="p">.</span><span class="f">getByText</span><span class="p">(</span><span class="s">&quot;Live&quot;</span><span class="p">)</span><span class="p">.</span><span class="f">waitFor</span><span class="p">(</span><span class="p">)</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="27" data-len="40"><b class="sw"></b><span class="no">27</span><span class="tx"><span class="k">await</span> <span class="f">highlight</span><span class="p">(</span>page<span class="p">.</span><span class="f">getByText</span><span class="p">(</span><span class="s">&quot;Live&quot;</span><span class="p">)</span><span class="p">)</span><span class="p">;</span></span></div>
+<div class="cl" data-n="28" data-len="52"><b class="sw"></b><span class="no">28</span><span class="tx"><span class="k">await</span> cap<span class="p">.</span><span class="f">finish</span><span class="p">(</span><span class="p">)</span><span class="p">;</span> <span class="c">// recording.webm + capture.json</span></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="abs side">
+    <div class="kicker">The script</div>
+    <div class="head">Code drives<br>your real app.</div>
+    <div class="api"><span class="fn mono">beat("pay")</span><span class="d">one voice-over line</span></div>
+    <div class="api"><span class="fn mono">click()</span><span class="d">a real cursor click</span></div>
+    <div class="api"><span class="fn mono">type()</span><span class="d">real keystrokes, read back</span></div>
+    <div class="api"><span class="fn mono">highlight()</span><span class="d">zoom and spotlight</span></div>
+  </div>
+</section>
+<style>
+  #sc003 .editor { left: 90px; top: 70px; width: 1250px; height: 860px; }
+  #sc003 .view { position: absolute; left: 0; top: 54px; right: 0; bottom: 0; overflow: hidden; }
+  #sc003 .code { position: absolute; left: 0; top: 14px; width: 100%; }
+  #sc003 .cl { position: relative; height: 44px; padding-left: 24px; display: flex; align-items: center; white-space: pre; font: 500 26px/44px "JetBrains Mono", monospace; color: #e8e8e8; }
+  #sc003 .cl .no { width: 52px; flex: none; margin-right: 22px; text-align: right; color: #8f8f8f; }
+  #sc003 .cl .tx { position: relative; }
+  #sc003 .sw { position: absolute; left: 92px; top: 4px; height: 36px; background: var(--signal); transform-origin: 0 50%; transform: scaleX(0); }
+  #sc003 .k { color: #ffd400; font-weight: 700; }
+  #sc003 .f { color: #ffffff; font-weight: 700; }
+  #sc003 .s { color: #ffe88a; }
+  #sc003 .c { color: #8a8a8a; font-style: italic; }
+  #sc003 .p { color: #b5b5b5; }
+  #sc003 .side { left: 1410px; top: 96px; width: 440px; }
+  #sc003 .head { margin: 22px 0 40px; font: 700 64px/1.02 "Space Grotesk", sans-serif; letter-spacing: -0.03em; }
+  #sc003 .api { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; padding: 16px 20px; background: var(--paper); color: var(--ink); border: 3px solid var(--paper); box-shadow: 8px 8px 0 var(--signal); }
+  #sc003 .api .fn { align-self: flex-start; padding: 4px 10px; background: var(--ink); color: var(--signal); font-size: 24px; font-weight: 700; }
+  #sc003 .api .d { font: 600 26px/1.2 "Space Grotesk", sans-serif; }
+</style>
+<script>
+  const S = SC[sid], L1 = S.lines[0];
+  const sc = "#sc003";
+  const LH = 44, CH = 26 * 0.6; // line height, JetBrains Mono advance per char at 26 px
+  const line = (n) => $(`${sc} .cl[data-n="${n}"]`);
+  // marker widths come from the character count, so they never depend on font load timing
+  $$(`${sc} .cl`).forEach((l) => ($(".sw", l).style.width = `${Math.round(Number(l.dataset.len) * CH + 14)}px`));
+  const scrollTo = (top, t, d = 0.55) => tl.to(`${sc} .code`, { y: -(top - 1) * LH, duration: d, ease: "power3.inOut" }, t);
+  const sweep = (n, t) => {
+    const l = line(n);
+    tl.fromTo($(".sw", l), { scaleX: 0 }, { scaleX: 1, duration: 0.32, ease: "expo.out" }, t);
+    tl.to($$(".tx, .tx span", l), { color: "#121212", duration: 0.1 }, t + 0.06);
+    tl.to($(".no", l), { color: "#ffd400", duration: 0.1 }, t);
+  };
+  // the editor slides in with the shove, then the camera pans down the file in steps
+  settleCam(`${sc} .editor`, S.start, S.end, 0.02);
+  tl.fromTo(`${sc} .cl`, { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.3, ease: "expo.out", stagger: { each: 0.025, ease: "power1.in" } }, S.start + 0.1);
+  scrollTo(8, W(sid, "script") - 0.1, 0.6);
+  sweep(16, W(sid, "drives"));
+  sweep(17, W(sid, "click"));
+  sweep(20, W(sid, "field"));
+  sweep(22, W(sid, "highlight"));
+  scrollTo(12, WE(sid, "highlight") + 0.5, 1.6);
+  // the side column: headline on "script", then one API card per marker sweep
+  rise(`${sc} .kicker`, S.start + 0.35, { y: 14, d: 0.4 });
+  tl.fromTo(`${sc} .head`, { autoAlpha: 0, y: 40 }, { autoAlpha: 1, y: 0, duration: 0.55, ease: "expo.out" }, W(sid, "script"));
+  const cards = $$(`${sc} .api`);
+  [W(sid, "drives"), W(sid, "click"), W(sid, "field"), W(sid, "highlight")].forEach((t, i) => {
+    tl.fromTo(cards[i], { autoAlpha: 0, x: 60, rotate: 3 }, { autoAlpha: 1, x: 0, rotate: 0, duration: 0.42, ease: "back.out(1.6)" }, t);
+  });
+</script>

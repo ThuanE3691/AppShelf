@@ -1,0 +1,35 @@
+<section id="sc008" class="scene layer">
+  <div class="abs kick"><span class="kicker">Product demo videos</span></div>
+  <div class="abs head">
+    <div class="m" data-layout-allow-overflow><span class="w8">Product demo videos,</span></div>
+    <div class="m" data-layout-allow-overflow><span class="w8">automated with</span></div>
+    <div class="m" data-layout-allow-overflow><span class="w8"><em>code + AI agents.</em></span></div>
+  </div>
+  <div class="abs cta">Message me on Upwork with your app's flow.</div>
+  <div class="abs rail"></div>
+  <div class="abs leg" style="left: 170px"></div>
+  <div class="abs leg" style="left: 1726px"></div>
+</section>
+<style>
+  #sc008 .kick { left: 170px; top: 150px; }
+  #sc008 .head { left: 170px; top: 210px; width: 1600px; }
+  #sc008 .m { overflow: hidden; padding-bottom: 8px; }
+  #sc008 .w8 { display: inline-block; font: 700 116px/1.02 "Space Grotesk", sans-serif; letter-spacing: -0.035em; white-space: nowrap; }
+  #sc008 .w8 em { font-style: normal; color: var(--ink); background: var(--signal); padding: 0 18px; }
+  #sc008 .cta { left: 170px; top: 690px; padding: 26px 36px; background: var(--paper); color: var(--ink); border: 4px solid var(--ink); box-shadow: 12px 12px 0 var(--signal); font: 700 48px/1.1 "Space Grotesk", sans-serif; letter-spacing: -0.015em; white-space: nowrap; }
+</style>
+<script>
+  const S = SC[sid], L1 = S.lines[0], L2 = S.lines[1];
+  const sc = "#sc008";
+  // static frame: the headline rises out of its masks, the shelf rail draws under it, the CTA presses on "flow"
+  tl.set(`${sc} .cta`, { autoAlpha: 0 }, 0);
+  rise(`${sc} .kick`, S.start + 0.1, { y: 14, d: 0.4 });
+  lineIn($$(`${sc} .w8`), S.start + 0.12, { each: 0.12 });
+  tl.fromTo(`${sc} .rail`, { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "expo.inOut" }, S.start + 0.2);
+  tl.fromTo(`${sc} .leg`, { scaleY: 0, transformOrigin: "50% 0%" }, { scaleY: 1, duration: 0.35, ease: "back.out(2)", stagger: 0.08 }, S.start + 0.75);
+  tl.fromTo(`${sc} .cta`, { autoAlpha: 0, y: 40, rotate: -1.5 }, { autoAlpha: 1, y: 0, rotate: 0, duration: 0.5, ease: "back.out(1.6)" }, L1.on);
+  const tp = W(sid, "flow");
+  tl.to(`${sc} .cta`, { x: 8, y: 8, boxShadow: "4px 4px 0 #ffd400", duration: 0.08, ease: "power2.out" }, tp);
+  tl.to(`${sc} .cta`, { x: 0, y: 0, boxShadow: "12px 12px 0 #ffd400", duration: 0.3, ease: "back.out(2)" }, tp + 0.1);
+  bump(`${sc} .w8 em`, W(sid, "video"), { s: 1.04 });
+</script>

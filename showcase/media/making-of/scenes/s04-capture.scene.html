@@ -1,0 +1,62 @@
+<section id="sc004" class="scene layer">
+  <div class="abs brw">
+    <div class="tb"><i></i><i></i><i></i><span class="addr mono">AppShelf · Stripe test mode</span></div>
+    <div class="vp" data-layout-allow-overflow>
+      <video id="raw4" class="clip" src="assets/footage/raw-ff.mp4" data-start="19.286" data-duration="9.107" data-track-index="1" muted playsinline></video>
+      <div class="abs spd mono" data-layout-allow-overlap>▶▶ 9×</div>
+      <div class="abs brk" data-layout-allow-overlap></div>
+    </div>
+  </div>
+  <div class="abs side">
+    <div class="kicker">The recording</div>
+    <div class="head">Real browser.<br>Real app.</div>
+    <div class="chip">Real cursor and keystrokes</div>
+    <div class="chip">Stripe in test mode</div>
+    <div class="chip">Every wait logged for the cut</div>
+  </div>
+  <div class="abs link" data-layout-allow-overlap></div>
+  <div class="abs loupe">
+    <div class="lb mono">Timecode strip · bottom 8 px of every frame</div>
+    <video id="strip4" class="clip" src="assets/footage/strip.mp4" data-start="19.286" data-duration="9.107" data-track-index="2" muted playsinline></video>
+  </div>
+  <div class="abs sticker fa" data-layout-allow-overlap>Frame-accurate</div>
+</section>
+<style>
+  #sc004 .brw { left: 90px; top: 96px; width: 1120px; background: var(--paper); border: 4px solid var(--paper); box-shadow: 14px 14px 0 var(--signal); }
+  #sc004 .tb { display: flex; align-items: center; gap: 12px; height: 50px; padding: 0 18px; background: var(--ink); }
+  #sc004 .tb i { width: 16px; height: 16px; border: 3px solid var(--paper); border-radius: 50%; }
+  #sc004 .addr { margin-left: 18px; padding: 6px 18px; background: var(--ink-2); border: 2px solid #4a4a4a; color: #d9d9d9; font-size: 20px; }
+  #sc004 .vp { position: relative; width: 1112px; height: 626px; overflow: hidden; background: #222; }
+  #sc004 #raw4 { position: absolute; left: 0; top: 0; width: 1112px; height: 626px; object-fit: cover; }
+  #sc004 .spd { left: 22px; top: 22px; padding: 10px 16px; background: var(--signal); color: var(--ink); border: 3px solid var(--ink); font-size: 26px; font-weight: 800; }
+  #sc004 .brk { left: 0; bottom: 0; width: 1112px; height: 14px; border: 4px solid var(--signal); }
+  #sc004 .side { left: 1290px; top: 110px; width: 540px; }
+  #sc004 .head { margin: 22px 0 36px; font: 700 70px/1.02 "Space Grotesk", sans-serif; letter-spacing: -0.03em; }
+  #sc004 .chip { margin-bottom: 18px; padding: 16px 22px; background: var(--ink-2); border: 3px solid var(--paper); border-left: 14px solid var(--signal); font: 600 28px/1.2 "Space Grotesk", sans-serif; }
+  #sc004 .link { left: 640px; top: 790px; width: 6px; height: 46px; background: var(--signal); transform-origin: 50% 0%; }
+  #sc004 .loupe { left: 90px; top: 836px; width: 1740px; height: 124px; padding: 10px 46px; background: var(--ink-2); border: 4px solid var(--signal); }
+  #sc004 .loupe .lb { font-size: 18px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  #sc004 #strip4 { position: absolute; left: 46px; top: 36px; width: 1640px; height: 76px; object-fit: fill; }
+  #sc004 .fa { left: 1480px; top: 776px; transform: rotate(-3deg); }
+</style>
+<script>
+  const S = SC[sid], L1 = S.lines[0], L2 = S.lines[1];
+  const sc = "#sc004";
+  // parallax: the browser drifts faster than the side column (the grid behind moves slowest)
+  tl.fromTo(`${sc} .brw`, { x: 24 }, { x: -24, duration: S.end - S.start, ease: "none" }, S.start);
+  tl.fromTo(`${sc} .side`, { x: 10 }, { x: -10, duration: S.end - S.start, ease: "none" }, S.start);
+  tl.fromTo(`${sc} .brw`, { y: 50, rotate: -1 }, { y: 0, rotate: 0, duration: 0.6, ease: "expo.out" }, S.start);
+  tl.set(`${sc} .chip, ${sc} .brk, ${sc} .loupe, ${sc} .fa`, { autoAlpha: 0 }, 0);
+  tl.set(`${sc} .link`, { scaleY: 0 }, 0);
+  pop(`${sc} .spd`, S.start + 0.5, { from: 0.5 });
+  rise(`${sc} .kicker`, S.start + 0.2, { y: 14, d: 0.4 });
+  tl.fromTo(`${sc} .head`, { autoAlpha: 0, y: 40 }, { autoAlpha: 1, y: 0, duration: 0.55, ease: "expo.out" }, W(sid, "browser"));
+  tl.fromTo(`${sc} .chip`, { autoAlpha: 0, x: 40 }, { autoAlpha: 1, x: 0, duration: 0.4, ease: "back.out(1.6)", stagger: { each: 0.18, ease: "power1.in" } }, W(sid, "app") + 0.1);
+  // cut-in on "time-stamped": the bottom edge of the frame is bracketed, then magnified in the loupe
+  const tf = W(sid, "frame"), ts = W(sid, "time-stamped");
+  tl.fromTo(`${sc} .brk`, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.05 }, tf);
+  for (let k = 0; k < 4; k++) tl.set(`${sc} .brk`, { autoAlpha: k % 2 ? 1 : 0.2 }, tf + 0.1 + k * 0.1);
+  tl.to(`${sc} .link`, { scaleY: 1, duration: 0.2, ease: "power2.out" }, ts - 0.2);
+  tl.fromTo(`${sc} .loupe`, { autoAlpha: 0, y: 60, scaleY: 0.4 }, { autoAlpha: 1, y: 0, scaleY: 1, duration: 0.45, ease: "expo.out" }, ts);
+  slam(`${sc} .fa`, ts + 0.45, { soft: true });
+</script>

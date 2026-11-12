@@ -1,0 +1,100 @@
+<section id="sc005" class="scene layer">
+  <div class="abs status">
+    <div class="st st1"><span class="kicker">The cut</span><div class="big"><span>Waits</span> <em>fast-forward</em></div></div>
+    <div class="st st2"><span class="kicker">The cut</span><div class="big"><span>Scenes snap to</span> <em>the voice</em></div></div>
+    <div class="st st3"><span class="kicker">The cut</span><div class="big"><span>Layers land on</span> <em>the frame</em></div></div>
+  </div>
+  <div class="abs tlp card-dark">
+    <div class="bar-head"><span>Edit timeline</span><span class="hot">one pass · 30 fps</span></div>
+    <div class="lanes">
+      <div class="lane ruler"><span class="lb mono">TIME</span><div class="tr"></div></div>
+      <div class="lane pic"><span class="lb mono">PICTURE</span>
+        <div class="tr" data-layout-allow-overflow>
+          <div class="seg live">Sign up</div><div class="seg wait"><b class="ff mono">▶▶ 6×</b></div>
+          <div class="seg live">Checkout</div><div class="seg wait"><b class="ff mono">▶▶ 9×</b></div>
+          <div class="seg live">Pay</div><div class="seg wait"><b class="ff mono">▶▶ 14×</b></div>
+          <div class="seg live">Live</div>
+        </div>
+      </div>
+      <div class="lane vo"><span class="lb mono">VOICE</span>
+        <div class="tr"><div class="chip vc"><i></i></div><div class="chip vc"><i></i></div><div class="chip vc"><i></i></div><div class="chip vc"><i></i></div></div>
+      </div>
+      <div class="lane fx zoom"><span class="lb mono">ZOOM</span><div class="tr"><b class="fxc" style="left: 120px; width: 170px">1.3×</b><b class="fxc al" style="left: 760px; width: 190px">1.45×</b><b class="fxc" style="left: 1210px; width: 150px">1.6×</b></div></div>
+      <div class="lane fx hi"><span class="lb mono">HIGHLIGHT</span><div class="tr"><b class="fxc" style="left: 300px; width: 230px">spot</b><b class="fxc al" style="left: 760px; width: 260px">price</b><b class="fxc" style="left: 1180px; width: 200px">LIVE</b></div></div>
+      <div class="lane fx cc"><span class="lb mono">CAPTION</span><div class="tr"><b class="fxc" style="left: 0px; width: 330px">line 1</b><b class="fxc" style="left: 360px; width: 360px">line 2</b><b class="fxc al" style="left: 760px; width: 370px">line 3</b><b class="fxc" style="left: 1160px; width: 260px">line 4</b></div></div>
+    </div>
+    <div class="abs ph" data-layout-allow-overlap><span class="fr mono">frame 1094</span></div>
+  </div>
+</section>
+<style>
+  #sc005 .status { left: 110px; top: 54px; width: 1700px; height: 150px; }
+  #sc005 .st { position: absolute; left: 0; top: 0; }
+  #sc005 .big { margin-top: 14px; font: 700 76px/1 "Space Grotesk", sans-serif; letter-spacing: -0.03em; white-space: nowrap; }
+  #sc005 .big em { font-style: normal; color: var(--ink); background: var(--signal); padding: 0 14px; }
+  #sc005 .tlp { left: 90px; top: 260px; width: 1740px; height: 620px; }
+  #sc005 .lanes { position: absolute; left: 0; top: 54px; right: 0; bottom: 0; padding: 20px 30px; }
+  #sc005 .lane { position: relative; display: flex; align-items: center; height: 74px; margin-bottom: 14px; }
+  #sc005 .lane.ruler { height: 40px; }
+  #sc005 .lane.pic { height: 96px; }
+  #sc005 .lb { width: 190px; flex: none; font-size: 20px; font-weight: 700; letter-spacing: 0.14em; color: var(--muted); }
+  #sc005 .tr { position: relative; flex: 1; height: 100%; overflow: hidden; }
+  #sc005 .ruler .tr { border-bottom: 2px solid #4a4a4a; }
+  #sc005 .tick { position: absolute; bottom: 0; width: 2px; height: 12px; background: #5a5a5a; }
+  #sc005 .tick.big { height: 22px; background: #8a8a8a; }
+  #sc005 .pic .tr { display: flex; overflow: hidden; }
+  #sc005 .seg { position: relative; flex: none; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; font: 700 26px/1 "Space Grotesk", sans-serif; white-space: nowrap; }
+  #sc005 .seg.live { background: var(--paper); color: var(--ink); border-right: 3px solid var(--ink); }
+  #sc005 .seg.wait { background-color: #2b2b2b; background-image: repeating-linear-gradient(135deg, #3a3a3a 0 10px, #2b2b2b 10px 20px); border-right: 3px solid var(--ink); }
+  #sc005 .ff { position: relative; padding: 6px 10px; background: var(--signal); color: var(--ink); border: 3px solid var(--ink); font-size: 20px; font-weight: 800; white-space: nowrap; }
+  #sc005 .vo .tr { display: flex; gap: 0; }
+  #sc005 .vc { position: relative; flex: none; height: 100%; border: 3px solid var(--ink); background: var(--signal); overflow: hidden; }
+  #sc005 .vc i { position: absolute; left: 12px; right: 12px; top: 50%; height: 34px; margin-top: -17px; background-image: repeating-linear-gradient(90deg, #121212 0 4px, transparent 4px 9px); -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 30%, #000 70%, transparent 100%); }
+  #sc005 .fxc { position: absolute; top: 9px; height: 56px; display: flex; align-items: center; padding: 0 14px; background: var(--paper); color: var(--ink); border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--signal); font: 700 22px/1 "JetBrains Mono", monospace; }
+  #sc005 .ph { left: 978px; top: 74px; width: 4px; height: 502px; background: var(--signal); }
+  #sc005 .fr { position: absolute; left: -84px; top: -46px; width: 172px; padding: 6px 0; text-align: center; background: var(--signal); color: var(--ink); border: 3px solid var(--ink); font-size: 20px; font-weight: 800; }
+</style>
+<script>
+  const S = SC[sid], [L1, L2, L3] = S.lines;
+  const sc = "#sc005";
+  // ruler ticks, built before any tween
+  const ruler = $(`${sc} .ruler .tr`);
+  for (let i = 0; i < 50; i++) { const k = document.createElement("i"); k.className = i % 5 ? "tick" : "tick big"; k.style.left = `${i * 30}px`; ruler.append(k); }
+  const segs = $$(`${sc} .seg`), waits = $$(`${sc} .seg.wait`), badges = $$(`${sc} .ff`), chips = $$(`${sc} .vc`);
+  // raw take: the waits are long, the bar runs off the lane; after the cut they shrink to a sliver
+  const RAW = [230, 420, 260, 560, 200, 760, 190];
+  const FF = [230, 60, 260, 70, 200, 80, 190];
+  const VO = [380, 400, 330, 300]; // voice lines; each scene (live + wait) stretches to its line
+  const SNAP = [300, 80, 330, 70, 250, 80, 300];
+  segs.forEach((s, i) => (s.style.width = `${RAW[i]}px`));
+  chips.forEach((c, i) => (c.style.width = `${VO[i]}px`));
+  tl.set(badges, { autoAlpha: 0, scale: 0.4 }, 0);
+  tl.set(`${sc} .st2, ${sc} .st3, ${sc} .fxc, ${sc} .ph`, { autoAlpha: 0 }, 0);
+  tl.set(chips, { autoAlpha: 0 }, 0);
+  // truck: the panel drifts right to left through the scene
+  tl.fromTo(`${sc} .tlp`, { x: 40 }, { x: -40, duration: S.end - S.start, ease: "power1.inOut" }, S.start);
+  rise(`${sc} .st1 .big`, S.start + 0.15, { y: 30, d: 0.45 });
+  // line 1: waits fast-forward
+  const tff = W(sid, "fast-forward");
+  tl.to(waits, { backgroundColor: "#3d3a1c", duration: 0.12, stagger: 0.04 }, W(sid, "waits"));
+  segs.forEach((s, i) => tl.to(s, { width: FF[i], duration: 0.6, ease: "expo.inOut" }, tff));
+  tl.to(badges, { autoAlpha: 1, scale: 1, duration: 0.35, ease: "back.out(2.2)", stagger: 0.07 }, tff + 0.2);
+  // line 2: voice chips drop in, scenes snap to them
+  tl.to(`${sc} .st1`, { autoAlpha: 0, y: -30, duration: 0.18, ease: "power2.in" }, L2.on - 0.2);
+  tl.fromTo(`${sc} .st2`, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: "expo.out" }, L2.on);
+  tl.fromTo(chips, { autoAlpha: 0, y: -40 }, { autoAlpha: 1, y: 0, duration: 0.4, ease: "back.out(1.8)", stagger: { each: 0.08, ease: "power1.in" } }, W(sid, "scene"));
+  const tsnap = W(sid, "line");
+  segs.forEach((s, i) => tl.to(s, { width: SNAP[i], duration: 0.42, ease: "back.out(1.6)" }, tsnap));
+  tl.to(badges, { scale: 0.8, duration: 0.2 }, tsnap);
+  // line 3: zoom, highlight and caption layers stack on their words, then the playhead slams on the frame
+  tl.to(`${sc} .st2`, { autoAlpha: 0, y: -30, duration: 0.18, ease: "power2.in" }, L3.on - 0.2);
+  tl.fromTo(`${sc} .st3`, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: "expo.out" }, L3.on);
+  [["zoom", "zooms"], ["hi", "highlights"], ["cc", "captions"]].forEach(([lane, word]) => {
+    tl.fromTo($$(`${sc} .${lane} .fxc`), { autoAlpha: 0, y: -26, scale: 1.2 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.34, ease: "back.out(2)", stagger: 0.06 }, W(sid, word));
+  });
+  const tex = W(sid, "exact"), tfr = W(sid, "frame");
+  tl.fromTo(`${sc} .ph`, { autoAlpha: 1, x: -700 }, { autoAlpha: 1, x: 0, duration: Math.max(0.3, tfr - tex), ease: "expo.inOut" }, tex);
+  bump($$(`${sc} .fxc.al`), tfr, { s: 1.12 });
+  tl.to($$(`${sc} .fxc.al`), { backgroundColor: "#ffd400", duration: 0.08 }, tfr);
+  bump(`${sc} .fr`, tfr, { s: 1.2 });
+  flash(tfr, 0.18);
+</script>

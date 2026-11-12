@@ -1,0 +1,51 @@
+<section id="sc001" class="scene layer">
+  <div class="cam layer">
+    <div class="abs kick mono">// product demo video</div>
+    <div class="abs ln ln1"><span class="tx">Your app needs a demo video.</span><i class="cur"></i></div>
+    <div class="abs ln ln2"><span class="tx">You don't need a <span class="mark"><b class="blk"></b><span class="mk">video editor.</span></span></span><i class="cur"></i></div>
+  </div>
+</section>
+<style>
+  #sc001 .kick { left: 170px; top: 330px; font: 600 28px/1 "JetBrains Mono", monospace; letter-spacing: 0.08em; color: var(--muted); }
+  #sc001 .ln { left: 170px; top: 440px; display: flex; align-items: center; white-space: nowrap; font: 700 124px/1.1 "Space Grotesk", sans-serif; letter-spacing: -0.035em; }
+  #sc001 .cur { display: inline-block; width: 20px; height: 118px; margin-left: 14px; background: var(--signal); }
+  #sc001 .mark { position: relative; display: inline-block; padding: 0 12px; margin-left: -12px; }
+  #sc001 .blk { position: absolute; left: 0; top: 10px; width: 100%; height: 118px; background: var(--signal); transform-origin: 0 50%; transform: rotate(-2deg) scaleX(0); }
+  #sc001 .mk { position: relative; }
+</style>
+<script>
+  const S = SC[sid], L1 = S.lines[0], L2 = S.lines[1];
+  const sc = "#sc001";
+  settleCam(`${sc} .cam`, S.start, S.end, 0.04);
+  rise(`${sc} .kick`, 0.15, { y: 12, d: 0.4 });
+  // line 1 types on with the voice, the cursor blinks on half-beats while idle
+  tl.set(`${sc} .ln2`, { autoAlpha: 0 }, 0);
+  // type-on: every character is its own span, shown in turn, so the cursor rides the end of the text
+  const typeChars = (root, t, d) => {
+    const chars = [];
+    const walk = (n) => Array.from(n.childNodes).forEach((c) => {
+      if (c.nodeType === 1) return walk(c);
+      if (c.nodeType !== 3) return;
+      const frag = document.createDocumentFragment();
+      Array.from(c.textContent).forEach((ch) => { const s = document.createElement("span"); s.textContent = ch; s.style.display = "none"; frag.append(s); chars.push(s); });
+      c.replaceWith(frag);
+    });
+    walk($(root));
+    chars.forEach((s, i) => tl.set(s, { display: "inline" }, t + (d * i) / chars.length));
+  };
+  typeChars(`${sc} .ln1 .tx`, Math.max(0.05, L1.on - 0.05), Math.max(0.6, L1.off - L1.on - 0.1));
+  const blink = (el, t0, t1) => { for (let t = t0, k = 0; t < t1 - 0.05; t += 0.27, k++) tl.set(el, { autoAlpha: k % 2 ? 1 : 0 }, t); tl.set(el, { autoAlpha: 1 }, t1); };
+  blink(`${sc} .ln1 .cur`, 0, L1.on);
+  blink(`${sc} .ln1 .cur`, L1.off, L2.on - 0.12);
+  // the cut: line 1 drops out, line 2 types in on the same baseline
+  tl.to(`${sc} .ln1`, { autoAlpha: 0, y: -60, duration: 0.16, ease: "power3.in" }, L2.on - 0.16);
+  tl.set(`${sc} .ln2`, { autoAlpha: 1 }, L2.on);
+  const d2 = Math.max(0.6, L2.off - L2.on - 0.05);
+  typeChars(`${sc} .ln2 .tx`, L2.on, d2);
+  // the highlighter sweeps under "video editor." as it lands, ink text on yellow
+  const tm = Math.max(L2.on + d2 - 0.05, W(sid, "editor"));
+  tl.to(`${sc} .mk`, { color: "#121212", duration: 0.12 }, tm + 0.1);
+  tl.fromTo(`${sc} .blk`, { scaleX: 0, rotate: -2 }, { scaleX: 1, rotate: -2, duration: 0.3, ease: "expo.out" }, tm);
+  bump(`${sc} .mark`, tm + 0.3, { s: 1.05 });
+  blink(`${sc} .ln2 .cur`, L2.off, S.end);
+</script>

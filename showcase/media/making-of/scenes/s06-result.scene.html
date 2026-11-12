@@ -1,0 +1,52 @@
+<section id="sc006" class="scene layer">
+  <div class="abs kick"><span class="kicker">The result</span></div>
+  <div class="abs player">
+    <div class="scr" data-layout-allow-overflow>
+      <video id="demo6" class="clip" src="assets/footage/demo-cut.mp4" data-start="37.5" data-duration="7.5" data-track-index="1" muted playsinline></video>
+    </div>
+    <div class="ctl"><i class="play"></i><div class="bar"><i class="fill"></i><i class="dot"></i></div><span class="tm mono">0:18 / 0:49</span></div>
+  </div>
+  <div class="abs sticker spec" data-layout-allow-overlap>49 s · HD · voice-over · music</div>
+</section>
+<style>
+  #sc006 .kick { left: 320px; top: 46px; }
+  #sc006 .player { left: 320px; top: 92px; width: 1280px; background: var(--ink); border: 4px solid var(--paper); box-shadow: 16px 16px 0 var(--signal); }
+  #sc006 .scr { position: relative; width: 1272px; height: 716px; overflow: hidden; background: #222; }
+  #sc006 #demo6 { position: absolute; left: 0; top: 0; width: 1272px; height: 716px; object-fit: cover; }
+  #sc006 .ctl { display: flex; align-items: center; gap: 22px; height: 64px; padding: 0 22px; }
+  #sc006 .play { width: 0; height: 0; border-left: 22px solid var(--paper); border-top: 13px solid transparent; border-bottom: 13px solid transparent; }
+  #sc006 .bar { position: relative; flex: 1; height: 8px; background: #3a3a3a; }
+  #sc006 .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: var(--signal); transform-origin: 0 50%; }
+  #sc006 .dot { position: absolute; top: -7px; left: 0; width: 22px; height: 22px; margin-left: -11px; background: var(--signal); border: 3px solid var(--ink); }
+  #sc006 .tm { font-size: 22px; font-weight: 700; color: var(--paper); }
+  #sc006 .spec { left: 1040px; top: 44px; transform: rotate(2deg); }
+</style>
+<script>
+  const S = SC[sid], L1 = S.lines[0];
+  const sc = "#sc006";
+  // where this clip sits in the finished demo (seconds); set from the demo's own timeline
+  const DEMO_LEN = 49.46, CLIP_IN = 18.6, CLIP_LEN = S.end - S.start;
+  // the player stamps in as the wipe clears, then the camera pushes in slowly while the demo plays
+  tl.fromTo(`${sc} .player`, { scale: 1.08, rotate: -1 }, { scale: 1, rotate: 0, duration: 0.55, ease: "expo.out" }, S.start);
+  tl.fromTo(`${sc} .player`, { y: 0 }, { y: -10, duration: S.end - S.start - 0.6, ease: "none" }, S.start + 0.6);
+  settleCam(`${sc} .scr`, S.start + 0.55, S.end, 0.03);
+  rise(`${sc} .kick`, S.start + 0.25, { y: 14, d: 0.4 });
+  // progress bar and clock follow the clip's real position in the demo
+  const p0 = CLIP_IN / DEMO_LEN, p1 = (CLIP_IN + CLIP_LEN) / DEMO_LEN, barW = 1272 - 22 * 2 - 22 * 3 - 150;
+  tl.fromTo(`${sc} .fill`, { scaleX: p0 }, { scaleX: p1, duration: CLIP_LEN, ease: "none" }, S.start);
+  tl.fromTo(`${sc} .dot`, { x: p0 * barW }, { x: p1 * barW, duration: CLIP_LEN, ease: "none" }, S.start);
+  const tm = $(`${sc} .tm`), fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  const total = fmt(DEMO_LEN);
+  // one label per second, swapped on the timeline (no text tweening)
+  tm.textContent = "";
+  for (let k = 0; k <= Math.floor(CLIP_LEN); k++) {
+    const s = document.createElement("span");
+    s.textContent = `${fmt(CLIP_IN + k)} / ${total}`;
+    s.style.display = k ? "none" : "inline";
+    tm.append(s);
+    if (k) { tl.set(tm.children[k - 1], { display: "none" }, S.start + k); tl.set(s, { display: "inline" }, S.start + k); }
+  }
+  // the spec sticker lands on "post"
+  tl.set(`${sc} .spec`, { autoAlpha: 0 }, 0);
+  slam(`${sc} .spec`, W(sid, "post"), { soft: true });
+</script>
