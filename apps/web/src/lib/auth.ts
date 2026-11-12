@@ -82,10 +82,23 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
   return findUserBySessionToken(token);
 });
 
-/** Keeps redirects on this site: only plain absolute paths are allowed. */
+// Browsers drop tab/CR/LF and read "\" as "/" while parsing a URL, so "/\t/evil.example"
+// or "/\evil.example" become "//evil.example". Refuse those characters, raw or
+// percent-encoded, and encoded slashes too.
+const UNSAFE_PATH_CHARS = /[\u0000-\u001f\u007f\\]|%(?:[01][0-9a-f]|7f|2f|5c)/i;
+
+/** Keeps redirects on this site: only a same-origin path (with query and hash) is returned. */
 export function safeNextPath(value: unknown, fallback = "/dashboard"): string {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return fallback;
+  if (UNSAFE_PATH_CHARS.test(value)) return fallback;
+  let base: URL;
+  let target: URL;
+  try {
+    base = new URL(appUrl());
+    target = new URL(value, base);
+  } catch {
     return fallback;
   }
-  return value;
+  if (target.origin !== base.origin) return fallback;
+  return `${target.pathname}${target.search}${target.hash}`;
 }

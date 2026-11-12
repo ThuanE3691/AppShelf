@@ -18,7 +18,9 @@ if ( getenv( 'APPSHELF_WP_INSTALLING' ) !== '1' ) {
 	define( 'BLOG_ID_CURRENT_SITE', 1 );
 }
 
-// Core is pinned by the image tag; no background updates or file editors.
+// Core, themes and plugins come from the image; nobody installs, updates or edits
+// code from wp-admin (that would let a site admin run arbitrary PHP).
 define( 'AUTOMATIC_UPDATER_DISABLED', true );
 define( 'DISALLOW_FILE_EDIT', true );
+define( 'DISALLOW_FILE_MODS', true );
 define( 'WP_POST_REVISIONS', 5 );

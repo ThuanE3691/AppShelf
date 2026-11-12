@@ -43,12 +43,33 @@ async function licenseIsActive(db: Database, site: Site): Promise<boolean> {
 }
 
 const isGone = (site: Site) => (GONE as readonly string[]).includes(site.status);
+/** Not provisioned yet: provisioning will apply the license state when it finishes. */
+const awaitsProvisioning = (site: Site) =>
+  site.wpBlogId === null && (PROVISIONABLE as readonly string[]).includes(site.status);
 
-const provision: JobHandler = async (job, { db, scripts, log }) => {
+/**
+ * A cancel that arrived while provisioning was still pending (its archive job
+ * skipped the unprovisioned site) takes effect in the provision job itself.
+ */
+async function archiveIfLicenseInactive({ db, scripts, log }: HandlerDeps, site: Site, blogId: number) {
+  if (await licenseIsActive(db, site)) return;
+  await scripts.archive(blogId);
+  await db
+    .update(sites)
+    .set({ status: "archived" })
+    .where(and(eq(sites.id, site.id), notInArray(sites.status, [...GONE])));
+  log.info("site archived after provisioning: license is inactive", { siteId: site.id, blogId });
+}
+
+const provision: JobHandler = async (job, deps) => {
+  const { db, scripts, log } = deps;
   const site = await requireSite(db, job);
   if (isGone(site)) return log.info("provision skipped: site is being deleted", { siteId: site.id });
   if (site.wpBlogId !== null && (site.status === "active" || site.status === "archived")) {
-    return log.info("provision skipped: already provisioned", { siteId: site.id, blogId: site.wpBlogId });
+    log.info("provision skipped: already provisioned", { siteId: site.id, blogId: site.wpBlogId });
+    // A retry after the post-create archive failed still has to finish it.
+    if (site.status === "active") await archiveIfLicenseInactive(deps, site, site.wpBlogId);
+    return;
   }
 
   const [owner] = await db.select({ email: users.email }).from(users).where(eq(users.id, site.userId)).limit(1);
@@ -76,6 +97,8 @@ const provision: JobHandler = async (job, { db, scripts, log }) => {
     })
     .where(eq(sites.id, site.id));
   log.info("site provisioned", { siteId: site.id, blogId: created.blogId, url: created.url });
+
+  await archiveIfLicenseInactive(deps, site, created.blogId);
 };
 
 const archive: JobHandler = async (job, { db, scripts, log }) => {
@@ -86,7 +109,10 @@ const archive: JobHandler = async (job, { db, scripts, log }) => {
   if (await licenseIsActive(db, site)) {
     return log.info("archive skipped: license is active again (renewed)", { siteId: site.id });
   }
-  if (site.wpBlogId === null) throw new Error(`site ${site.id} is not provisioned yet`);
+  if (awaitsProvisioning(site)) {
+    return log.info("archive deferred to provisioning: site has no blog yet", { siteId: site.id });
+  }
+  if (site.wpBlogId === null) throw new PermanentJobError(`site ${site.id} has no blog (status ${site.status})`);
 
   await scripts.archive(site.wpBlogId);
   await db
@@ -104,7 +130,10 @@ const unarchive: JobHandler = async (job, { db, scripts, log }) => {
   if (!(await licenseIsActive(db, site))) {
     return log.info("unarchive skipped: license is inactive", { siteId: site.id });
   }
-  if (site.wpBlogId === null) throw new Error(`site ${site.id} is not provisioned yet`);
+  if (awaitsProvisioning(site)) {
+    return log.info("unarchive deferred to provisioning: site has no blog yet", { siteId: site.id });
+  }
+  if (site.wpBlogId === null) throw new PermanentJobError(`site ${site.id} has no blog (status ${site.status})`);
 
   await scripts.unarchive(site.wpBlogId);
   await db

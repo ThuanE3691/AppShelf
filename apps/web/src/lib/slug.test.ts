@@ -41,6 +41,9 @@ describe("validateSlug", () => {
     ["wp-anything", "reserved"],
     ["restaurant-demo", "reserved"],
     ["files", "reserved"],
+    ["appshelf", "reserved"],
+    ["appshelf-admin", "reserved"],
+    ["  AppShelf ", "reserved"],
   ])("rejects %j", (slug, reason) => {
     const result = validateSlug(slug);
     expect(result.ok).toBe(false);

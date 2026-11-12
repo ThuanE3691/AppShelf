@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   check,
   index,
@@ -101,10 +102,29 @@ export const subscriptions = pgTable(
     status: text("status").notNull(),
     currentPeriodEnd: tz("current_period_end"),
     canceledAt: tz("canceled_at"),
+    /**
+     * The license this subscription paid for, set when the license is linked to
+     * it and kept after a renewal replaces it, so every subscription that can
+     * still bill a license can be found and cancelled.
+     */
+    licenseId: uuid("license_id").references((): AnyPgColumn => licenses.id, { onDelete: "set null" }),
     ...timestamps,
   },
-  (t) => [index("subscriptions_user_id_idx").on(t.userId)],
+  (t) => [
+    index("subscriptions_user_id_idx").on(t.userId),
+    index("subscriptions_license_id_idx").on(t.licenseId),
+  ],
 );
+
+/** Stripe subscription statuses that can still charge the customer. */
+export const BILLABLE_SUBSCRIPTION_STATUSES = [
+  "active",
+  "trialing",
+  "past_due",
+  "unpaid",
+  "incomplete",
+  "paused",
+] as const;
 
 export const licenses = pgTable(
   "licenses",

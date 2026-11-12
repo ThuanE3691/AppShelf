@@ -25,6 +25,10 @@ kses_remove_filters();
 
 const APPSHELF_TEMPLATES      = array( 'restaurant', 'agency', 'services' );
 const APPSHELF_SHOWCASE_SLUGS = array( 'restaurant-demo', 'agency-demo', 'services-demo' );
+// The network itself and its admin login (wp-init.sh); never a customer site.
+const APPSHELF_RESERVED_SLUGS = array( 'appshelf', 'appshelf-admin' );
+// User meta that marks the admin AppShelf created for a site slug.
+const APPSHELF_ADMIN_META = 'appshelf_site_slug';
 
 function appshelf_env( string $name ): string {
 	$value = getenv( $name );
@@ -61,22 +65,72 @@ function appshelf_validate_slug( string $slug ): void {
 	if ( in_array( $slug, get_subdirectory_reserved_names(), true ) ) {
 		WP_CLI::error( "slug '$slug' is reserved by WordPress." );
 	}
+	if ( in_array( $slug, APPSHELF_RESERVED_SLUGS, true ) ) {
+		WP_CLI::error( "slug '$slug' is reserved by AppShelf." );
+	}
+}
+
+/**
+ * Stops the job unless the user is a plain admin of this site only: never a
+ * super admin, never a member of another site ($blog_id 0: of no site yet).
+ */
+function appshelf_assert_site_only_user( WP_User $user, int $blog_id ): void {
+	if ( is_super_admin( $user->ID ) ) {
+		WP_CLI::error( "Refusing to use user {$user->user_login}: it is a network super admin." );
+	}
+	foreach ( array_keys( get_blogs_of_user( $user->ID, true ) ) as $member_of ) {
+		if ( (int) $member_of !== $blog_id ) {
+			WP_CLI::error( "Refusing to use user {$user->user_login}: it belongs to another site." );
+		}
+	}
+}
+
+/**
+ * The admin an earlier run created for this slug, or null. Sites created before
+ * logins got a random suffix used "<slug>-admin"; that user is adopted only for
+ * an existing site and only after the same safety checks.
+ */
+function appshelf_find_site_admin( string $slug, int $blog_id ): ?WP_User {
+	$users = get_users(
+		array(
+			'blog_id'    => 0,
+			'meta_key'   => APPSHELF_ADMIN_META, // phpcs:ignore WordPress.DB.SlowDBQuery
+			'meta_value' => $slug, // phpcs:ignore WordPress.DB.SlowDBQuery
+			'number'     => 2,
+		)
+	);
+	if ( count( $users ) > 1 ) {
+		WP_CLI::error( "Several admin users are marked for site '$slug'." );
+	}
+	$user = $users[0] ?? null;
+	if ( ! $user && $blog_id > 0 ) {
+		$user = get_user_by( 'login', $slug . '-admin' ) ?: null;
+	}
+	if ( $user ) {
+		appshelf_assert_site_only_user( $user, $blog_id );
+	}
+	return $user;
 }
 
 /**
  * Creates or refreshes the per-site admin user and returns [user_id, login, password].
  * A fresh password is generated on every call so a retried create still returns
- * working credentials.
+ * working credentials. Logins are "<slug>-<random hex>", so a slug can never name
+ * an existing account such as the network admin.
  */
-function appshelf_upsert_admin( string $slug, string $email ): array {
-	$login    = $slug . '-admin';
+function appshelf_upsert_admin( string $slug, string $email, int $blog_id ): array {
 	$password = wp_generate_password( 20, false );
-	$user     = get_user_by( 'login', $login );
+	$user     = appshelf_find_site_admin( $slug, $blog_id );
 
 	if ( $user ) {
 		wp_set_password( $password, $user->ID );
-		return array( $user->ID, $login, $password );
+		update_user_meta( $user->ID, APPSHELF_ADMIN_META, $slug );
+		return array( $user->ID, $user->user_login, $password );
 	}
+
+	do {
+		$login = $slug . '-' . bin2hex( random_bytes( 4 ) );
+	} while ( username_exists( $login ) );
 
 	// WordPress needs unique emails; one customer may own several sites.
 	if ( email_exists( $email ) ) {
@@ -96,6 +150,10 @@ function appshelf_upsert_admin( string $slug, string $email ): array {
 	}
 	// wp_insert_user() adds the user to the main site; site admins belong only to their site.
 	remove_user_from_blog( $user_id, get_main_site_id() );
+	update_user_meta( $user_id, APPSHELF_ADMIN_META, $slug );
+	if ( is_super_admin( $user_id ) ) {
+		WP_CLI::error( "New site admin $login is a super admin; refusing to continue." );
+	}
 	return array( $user_id, $login, $password );
 }
 
@@ -235,7 +293,7 @@ function appshelf_create(): void {
 	$path    = $network->path . $slug . '/';
 	$blog_id = (int) get_blog_id_from_url( $network->domain, $path );
 
-	list( $user_id, $login, $password ) = appshelf_upsert_admin( $slug, $email );
+	list( $user_id, $login, $password ) = appshelf_upsert_admin( $slug, $email, $blog_id );
 
 	$is_new = 0 === $blog_id;
 	if ( $is_new ) {

@@ -121,6 +121,8 @@ function Test-TunnelEnabled {
 function Get-ComposeArgList {
   $composeArgs = @()
   if ($env:APPSHELF_PROJECT) { $composeArgs += @('-p', $env:APPSHELF_PROJECT) }
+  # Values for ${...} in the compose files; each service maps only the keys it needs.
+  foreach ($f in @($SecretsFile, $UserSecretsFile)) { if (Test-Path $f) { $composeArgs += @('--env-file', $f) } }
   $files = @('compose.yaml', 'wordpress/compose.yaml', 'apps/web/compose.yaml', 'apps/worker/compose.yaml', 'infra/images.compose.yaml')
   foreach ($f in $files) { if (Test-Path (Join-Path $Root $f)) { $composeArgs += @('-f', $f) } }
   if (Test-TunnelEnabled) { $composeArgs += @('-f', 'infra/tunnel.compose.yaml') }
@@ -327,6 +329,26 @@ function Invoke-WordPressSql([string]$Sql) {
   return $out
 }
 
+# Points sites.url in the app database (dashboard "Visit" and "Open wp-admin" links)
+# at the WordPress base URL. Idempotent; every site lives at <base>/<slug>/.
+function Update-AppSiteUrls([string]$BaseUrl) {
+  Invoke-Compose @('up', '-d', '--wait', 'postgres')
+  # Single-quoted: $$ is PL/pgSQL quoting here, not PowerShell. $BaseUrl is a validated scheme + domain.
+  $sql = @'
+DO $$
+BEGIN
+  IF to_regclass('public.sites') IS NOT NULL THEN
+    UPDATE sites SET url = '__BASE__/' || slug || '/', updated_at = now()
+     WHERE url IS DISTINCT FROM '__BASE__/' || slug || '/';
+  END IF;
+END $$;
+'@.Replace('__BASE__', $BaseUrl)
+  $all = @('compose') + (Get-ComposeArgList) + @('exec', '-T', 'postgres', 'psql', '-U', 'appshelf', '-d', 'appshelf', '-v', 'ON_ERROR_STOP=1', '-q')
+  $sql | & docker @all
+  if ($LASTEXITCODE -ne 0) { throw "Updating site URLs in Postgres failed with exit code $LASTEXITCODE" }
+  Write-Host "App database: site links now use $BaseUrl."
+}
+
 function Test-DomainName([string]$Domain) {
   return $Domain -match '^[a-z0-9-]+(\.[a-z0-9-]+)+$'
 }
@@ -350,7 +372,9 @@ function Invoke-SetDomain {
   $oldScheme = if ($siteUrl -like 'https://*') { 'https' } else { 'http' }
   if (-not (Test-DomainName $oldDomain)) { throw "Unexpected current network domain: $oldDomain" }
   if ($oldDomain -eq $newDomain -and $oldScheme -eq $newScheme) {
-    Write-Host "WordPress network already on $newScheme`://$newDomain. Nothing to do."
+    Write-Host "WordPress network already on $newScheme`://$newDomain. Nothing to migrate."
+    # A run that stopped after the WordPress move still needs the app links fixed.
+    Update-AppSiteUrls "$newScheme`://$newDomain"
     return
   }
   Write-Host "Moving the WordPress network: $oldScheme`://$oldDomain -> $newScheme`://$newDomain"
@@ -381,6 +405,8 @@ UPDATE wp_blogs SET domain = '$newDomain' WHERE domain = '$oldDomain';
   Invoke-Compose @('run', '--rm', '--no-deps', '-T', '--entrypoint', 'sh',
     '-e', "WP_DOMAIN=$newDomain", '-e', "OLD_URL=$oldScheme`://$oldDomain", '-e', "NEW_URL=$newScheme`://$newDomain",
     'wp-init', '-c', $replace)
+
+  Update-AppSiteUrls "$newScheme`://$newDomain"
 
   Write-Host "Done. Run ``up`` to start WordPress on $newScheme`://$newDomain. Restore with the backup if needed."
 }

@@ -1,5 +1,9 @@
 # Base services. Merged with the other compose files by scripts/appshelf.ps1.
 # Personal demo project: nothing here restarts on its own.
+#
+# Secrets: scripts/appshelf.ps1 hands the secrets files to Compose with
+# --env-file, so ${...} below is filled from them. Every service names the few
+# variables it needs; no service loads a whole secrets file.
 name: appshelf
 
 services:
@@ -7,10 +11,10 @@ services:
     image: postgres:17-alpine
     restart: "no"
     mem_limit: 256m
-    env_file: ["${APPSHELF_SECRETS_DIR:-.}/.secrets.local"]
     environment:
       POSTGRES_DB: appshelf
       POSTGRES_USER: appshelf
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,10 +27,11 @@ services:
     image: mariadb:11
     restart: "no"
     mem_limit: 384m
-    env_file: ["${APPSHELF_SECRETS_DIR:-.}/.secrets.local"]
     environment:
       MARIADB_DATABASE: wordpress
       MARIADB_USER: wordpress
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:?MARIADB_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?MARIADB_ROOT_PASSWORD is not set; start the stack with scripts/appshelf.ps1}
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:

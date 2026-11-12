@@ -5,12 +5,13 @@ import { closeDb, getDb, jobs, licenses, products, sites, subscriptions, users }
 import { truncateAll, testDatabaseUrl } from "@appshelf/db/testing";
 import { asc } from "drizzle-orm";
 import type Stripe from "stripe";
-import { afterAll, beforeEach } from "vitest";
+import { afterAll, afterEach, beforeEach, vi } from "vitest";
 import { POST } from "@/app/api/stripe/webhook/route";
 import { getStripe } from "@/lib/stripe";
 
 export function withCleanDatabase() {
   beforeEach(async () => truncateAll(testDatabaseUrl()));
+  afterEach(() => vi.restoreAllMocks());
   afterAll(async () => closeDb());
 }
 
@@ -71,12 +72,15 @@ export function checkoutCompletedEvent(input: {
   );
 }
 
-export function subscriptionEvent(
-  type: "customer.subscription.created" | "customer.subscription.updated" | "customer.subscription.deleted",
-  input: { subscriptionId: string; status: string; metadata?: Record<string, string>; customerId?: string },
-): Stripe.Event {
+/** A Stripe-shaped subscription object (webhook payloads and stubbed API responses). */
+export function stripeSubscription(input: {
+  subscriptionId: string;
+  status: string;
+  metadata?: Record<string, string>;
+  customerId?: string;
+}): Stripe.Subscription {
   const periodEnd = Math.floor(Date.now() / 1000) + 30 * 24 * 3600;
-  return event(type, {
+  return {
     id: input.subscriptionId,
     object: "subscription",
     status: input.status,
@@ -84,7 +88,32 @@ export function subscriptionEvent(
     canceled_at: input.status === "canceled" ? Math.floor(Date.now() / 1000) : null,
     metadata: input.metadata ?? {},
     items: { object: "list", data: [{ id: "si_test", current_period_end: periodEnd }] },
-  });
+  } as unknown as Stripe.Subscription;
+}
+
+export function subscriptionEvent(
+  type: "customer.subscription.created" | "customer.subscription.updated" | "customer.subscription.deleted",
+  input: { subscriptionId: string; status: string; metadata?: Record<string, string>; customerId?: string },
+): Stripe.Event {
+  return event(type, stripeSubscription(input));
+}
+
+/**
+ * Stubs the two Stripe subscription calls AppShelf makes (retrieve, cancel) with
+ * an in-memory account; `failCancel` makes cancel throw for those ids.
+ */
+export function stubStripeSubscriptions(statuses: Record<string, string>, failCancel: string[] = []) {
+  const subs = getStripe().subscriptions;
+  const canceled: string[] = [];
+  const current = (id: string) => stripeSubscription({ subscriptionId: id, status: statuses[id] ?? "canceled" });
+  vi.spyOn(subs, "retrieve").mockImplementation((async (id: string) => current(id)) as never);
+  vi.spyOn(subs, "cancel").mockImplementation((async (id: string) => {
+    if (failCancel.includes(id)) throw new Error(`Stripe could not cancel ${id}`);
+    statuses[id] = "canceled";
+    canceled.push(id);
+    return current(id);
+  }) as never);
+  return { canceled };
 }
 
 /** Signs the payload like Stripe does and calls the real route handler. */
