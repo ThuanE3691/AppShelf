@@ -4,9 +4,9 @@
     <div class="scr" data-layout-allow-overflow>
       <video id="demo6" class="clip" src="assets/footage/demo-cut.mp4" data-start="37.5" data-duration="7.5" data-track-index="1" muted playsinline></video>
     </div>
-    <div class="ctl"><i class="play"></i><div class="bar"><i class="fill"></i><i class="dot"></i></div><span class="tm mono">0:00 / 0:45</span></div>
+    <div class="ctl"><i class="play"></i><div class="bar"><i class="fill"></i><i class="dot"></i></div><span class="tm mono">0:18 / 0:49</span></div>
   </div>
-  <div class="abs sticker spec" data-layout-allow-overlap>45 s · 1080p · voice-over · music</div>
+  <div class="abs sticker spec" data-layout-allow-overlap>49 s · HD · voice-over · music</div>
 </section>
 <style>
   #sc006 .kick { left: 320px; top: 46px; }
@@ -25,7 +25,7 @@
   const S = SC[sid], L1 = S.lines[0];
   const sc = "#sc006";
   // where this clip sits in the finished demo (seconds); set from the demo's own timeline
-  const DEMO_LEN = 45, CLIP_IN = 20, CLIP_LEN = S.end - S.start;
+  const DEMO_LEN = 49.46, CLIP_IN = 18.6, CLIP_LEN = S.end - S.start;
   // the player stamps in as the wipe clears, then the camera pushes in slowly while the demo plays
   tl.fromTo(`${sc} .player`, { scale: 1.08, rotate: -1 }, { scale: 1, rotate: 0, duration: 0.55, ease: "expo.out" }, S.start);
   tl.fromTo(`${sc} .player`, { y: 0 }, { y: -10, duration: S.end - S.start - 0.6, ease: "none" }, S.start + 0.6);
