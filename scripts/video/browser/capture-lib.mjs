@@ -25,7 +25,10 @@ export const DEFAULTS = {
   timecode: { height: 8, bits: 24, x: 16, barWidth: 48 },
   brand: { ink: "#121212", paper: "#ffffff", accent: "#ffd400", overlayFontCss: "", overlayFont: "ui-monospace, Consolas, monospace" },
   wipes: [],
-  edit: { voPad: 0.35, afterFast: 0.6, afterMark: 0.9 },
+  edit: { voPad: 0.35, afterFast: 0.6, afterMark: 0.9, wipeHold: 0.5 },
+  // CSS px at the top and bottom of the viewport that overlays cover (callouts, the
+  // subtitle band): click() and highlight() scroll their target out of them first.
+  safe: { top: 0, bottom: 0 },
   browser: { channel: "chrome", locale: "en-US" },
 };
 
@@ -116,6 +119,7 @@ function overlay(o) {
       { duration: 340, easing: "cubic-bezier(.7,0,.84,0)", fill: "forwards" }).finished;
   };
   window.__mvReveal = () => {
+    if (!state.covered) { window.__mvShown = true; return Promise.resolve(); }
     state.covered = false;
     const s = slab();
     const done = s?.animate([{ transform: "translateX(0)" }, { transform: "translateX(100%)" }],
@@ -173,21 +177,14 @@ function overlay(o) {
   if (document.documentElement) watch();
   else document.addEventListener("DOMContentLoaded", watch, { once: true });
   // Client-side routing (pushState, popstate) keeps the document, so no new load
-  // reveals the page: name the destination and reveal once the DOM is quiet.
+  // happens: name the destination on the slab and leave the reveal to waitShown(), at 1x
+  // like any other wipe. Frameworks also call replaceState while hydrating a fresh load
+  // (Next.js does), which must not reveal a page still inside a fast-forward either.
   const onRoute = () => {
     if (!state.covered || !document.documentElement) return;
     if (!state.label) state.label = labelFor();
     slab();
-    const t0 = Date.now();
-    let timer;
-    const done = () => { quiet.disconnect(); window.__mvReveal(); };
-    const quiet = new MutationObserver(() => {
-      if (Date.now() - t0 > 3000) return;
-      clearTimeout(timer);
-      timer = setTimeout(done, 250);
-    });
-    quiet.observe(document.documentElement, { childList: true, subtree: true });
-    timer = setTimeout(done, 250);
+    setTimeout(() => state.covered && window.__mvReveal(), o.revealFallback);
   };
   for (const k of ["pushState", "replaceState"]) {
     const orig = history[k];
@@ -199,12 +196,16 @@ function overlay(o) {
   }
   addEventListener("popstate", () => setTimeout(onRoute, 0));
 
+  // A covered document stays covered until waitShown() reveals it, so the wipe and its
+  // label play at 1x, never inside a fast-forward (where they flash by in two frames).
+  // The fallback only keeps a flow that forgot waitShown() from filming a yellow page.
   window.__mvShown = !state.covered;
-  if (state.covered) {
-    const reveal = () => setTimeout(() => window.__mvReveal(), 300);
-    if (document.readyState === "complete") reveal();
-    else addEventListener("load", reveal, { once: true });
-  }
+  const ready = () => {
+    window.__mvReady = true;
+    if (state.covered) setTimeout(() => state.covered && window.__mvReveal(), o.revealFallback);
+  };
+  if (document.readyState === "complete") ready();
+  else addEventListener("load", ready, { once: true });
 }
 
 /**
@@ -220,6 +221,7 @@ export async function createCapture(config, { chromium, project = ".", tts } = {
     timecode: { ...DEFAULTS.timecode, ...config.timecode },
     brand: { ...DEFAULTS.brand, ...config.brand },
     edit: { ...DEFAULTS.edit, ...config.edit },
+    safe: { ...DEFAULTS.safe, ...config.safe },
     browser: { ...DEFAULTS.browser, ...config.browser },
   };
   const beatsById = Object.fromEntries((cfg.beats ?? []).map((b) => [b.id, b]));
@@ -255,7 +257,7 @@ export async function createCapture(config, { chromium, project = ".", tts } = {
         recordVideo: { dir: rawDir, size: cfg.viewport },
       });
       await context.exposeFunction("__mvCursor", () => cursorAt);
-      const opts = { brand: cfg.brand, wipes: cfg.wipes, tc: cfg.timecode, cursor: cursorAt, coverOnLoad };
+      const opts = { brand: cfg.brand, wipes: cfg.wipes, tc: cfg.timecode, cursor: cursorAt, coverOnLoad, revealFallback: 8000 };
       await context.addInitScript(`(${overlay.toString()})(${JSON.stringify(opts)});`);
       page = await context.newPage();
       t0 = Date.now();
@@ -333,6 +335,26 @@ export async function createCapture(config, { chromium, project = ".", tts } = {
       cursorAt = { x, y };
     },
 
+    /**
+     * Box of the element after making sure no overlay covers it: when it sits in the
+     * safe top or bottom band (callouts, subtitles), it is scrolled smoothly to the middle.
+     */
+    async inView(locator) {
+      const b = await cap.box(locator);
+      const { top, bottom } = cfg.safe;
+      if (b.y >= top && b.y + b.height <= cfg.viewport.height - bottom) return b;
+      // Markers, spots and zooms sit on page coordinates: the scroll would leave them
+      // on the wrong text, so they end here.
+      cap.unmark(); cap.unspot(); cap.unfocus();
+      await locator.evaluate((el) => el.scrollIntoView({ block: "center", behavior: "smooth" }));
+      await pause(450);
+      const after = await cap.box(locator);
+      if (after.y + after.height > cfg.viewport.height - bottom) {
+        console.warn(`inView: ${locator} stays under the bottom band (the page cannot scroll further)`);
+      }
+      return after;
+    },
+
     async box(locator) {
       await locator.scrollIntoViewIfNeeded();
       const b = await locator.boundingBox();
@@ -342,9 +364,11 @@ export async function createCapture(config, { chromium, project = ".", tts } = {
 
     /** Moves to the element and clicks it with a visible press (a real click). */
     async click(locator, { dx = 0.5, dy = 0.5 } = {}) {
-      const b = await cap.box(locator);
-      await cap.moveTo(b.x + b.width * dx, b.y + b.height * dy);
+      const b = await cap.inView(locator);
+      const x = b.x + b.width * dx, y = b.y + b.height * dy;
+      await cap.moveTo(x, y);
       await pause(120);
+      events.push({ type: "click", t: now(), x, y });
       await page.mouse.down();
       await pause(80);
       await page.mouse.up();
@@ -377,9 +401,12 @@ export async function createCapture(config, { chromium, project = ".", tts } = {
      * buttons and handlers under the cursor never fire. dx/dy pick the point.
      */
     async press(target, { dx = 0.5, dy = 0.5 } = {}) {
+      await cap.inView([target].flat()[0]);
       const b = await cap.textBox(target);
-      await cap.moveTo(b.x + b.width * dx, b.y + b.height * dy);
+      const x = b.x + b.width * dx, y = b.y + b.height * dy;
+      await cap.moveTo(x, y);
       await pause(90);
+      events.push({ type: "click", t: now(), x, y, press: true });
       await page.evaluate(() => window.__mvPress?.()).catch(() => {});
       await pause(120);
       return b;
@@ -393,7 +420,7 @@ export async function createCapture(config, { chromium, project = ".", tts } = {
      * whichever comes first, and never adds length to the beat.
      */
     async highlight(target, { press = true, dx = 0.12, dy = 0.5 } = {}) {
-      const b = press ? await cap.press(target, { dx, dy }) : await cap.textBox(target);
+      const b = press ? await cap.press(target, { dx, dy }) : (await cap.inView([target].flat()[0]), await cap.textBox(target));
       events.push({ type: "marker", t: now(), x: b.x, y: b.y, w: b.width, h: b.height });
       if (cur) cur.lastMark = now();
       return b;
@@ -422,14 +449,19 @@ export async function createCapture(config, { chromium, project = ".", tts } = {
       await page.evaluate((l) => window.__mvWipe?.(l), label).catch(() => {});
     },
 
-    /** Waits until the new document is revealed: "it happened" is not "it is visible". */
+    /**
+     * Reveals a covered new document once it has loaded: the wipe's label holds
+     * edit.wipeHold at 1x, then the slab slides off. Call it outside fast() after every
+     * navigation, before any highlight on the new page ("it happened" is not "it is
+     * visible"); a page that is already shown returns at once.
+     */
     async waitShown(timeout = 10_000) {
-      const shown = await page.waitForFunction(() => window.__mvShown === true, null, { timeout }).then(() => true, () => false);
-      if (!shown) {
-        // Never leave the page covered: reveal it and say so, the take may need a look.
-        console.warn(`waitShown: page not revealed after ${timeout} ms at ${page.url()}; forcing the reveal`);
-        await page.evaluate(() => window.__mvReveal?.()).catch(() => {});
-      }
+      const state = await page.waitForFunction(() => (window.__mvShown === true ? "shown" : window.__mvReady === true && "ready"),
+        null, { timeout }).then((h) => h.jsonValue(), () => null);
+      if (state === "shown") return;
+      if (state === null) console.warn(`waitShown: page not loaded after ${timeout} ms at ${page.url()}; revealing it anyway`);
+      await pause(cfg.edit.wipeHold * 1000);
+      await page.evaluate(() => window.__mvReveal?.()).catch(() => {});
     },
 
     /** Union box of a locator or an array of them, in page CSS px. */

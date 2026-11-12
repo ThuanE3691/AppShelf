@@ -29,6 +29,11 @@
     "x": 16,
     "barWidth": 48
   },
+  "_safe": "CSS px the callouts (top) and subtitles (bottom) cover; clicks and highlights are scrolled out of them.",
+  "safe": {
+    "top": 0,
+    "bottom": 110
+  },
   "brand": {
     "ink": "#121212",
     "paper": "#ffffff",
@@ -52,23 +57,23 @@
   },
   "_beats": "One line per beat; a beat lasts its line plus edit.voPad. Per-take numbers go in callouts, not lines (they would miss the TTS cache).",
   "beats": [
-    { "id": "intro", "line": "AppShelf sells hosted WordPress sites for nine dollars a month, billed with Stripe." },
+    { "id": "intro", "line": "AppShelf sells hosted WordPress sites, billed with Stripe." },
     { "id": "templates", "line": "Pick one of three starter templates." },
     { "id": "signup", "line": "Sign up in seconds. There's no email check in this demo." },
-    { "id": "newSite", "line": "Choose a template, name the site, and pick a free address." },
-    { "id": "pay", "line": "Then pay on Stripe Checkout, in test mode, with Stripe's own test card number." },
-    { "id": "build", "line": "Stripe sends a webhook, and a worker builds the WordPress site." },
-    { "id": "live", "line": "And just like that, it's live." },
-    { "id": "site", "line": "Here's the new restaurant site, ready to edit." },
-    { "id": "cancel", "line": "Cancel the plan, and the licence turns inactive right away." },
+    { "id": "newSite", "line": "Choose a template, name the site, and check that its web address is still free." },
+    { "id": "pay", "line": "Stripe Checkout opens in test mode. Pay with Stripe's own test card number, and the payment goes through." },
+    { "id": "build", "line": "A Stripe webhook starts a worker that builds the site." },
+    { "id": "live", "line": "And it's live." },
+    { "id": "site", "line": "Here's the new site, ready to edit." },
+    { "id": "cancel", "line": "Now cancel the plan on the dashboard, and the site's licence turns inactive right away." },
     { "id": "archived", "line": "Visitors now see a notice that the site is archived." },
-    { "id": "renew", "line": "Renew it from the dashboard, and pay again with the same test card." },
-    { "id": "back", "line": "Seconds later, it's back online." },
+    { "id": "renew", "line": "Renew it from the dashboard, and pay once more with the same Stripe test card." },
+    { "id": "back", "line": "A few seconds later, it's back online." },
     { "id": "same", "line": "Same site, same content." }
   ],
   "endLine": "Built with Next.js, Postgres, Stripe and WordPress.",
   "edit": {
-    "title": 2.0,
+    "title": 1.6,
     "end": 3.0,
     "voPad": 0.35,
     "maxLiveSpeed": 1.35,
@@ -77,6 +82,8 @@
     "minSpeed": 1.5,
     "afterFast": 0.6,
     "afterMark": 0.9,
+    "wipeHold": 0.5,
+    "captionBand": 96,
     "calloutMax": 3.6,
     "spotMax": 6.0
   },

@@ -34,7 +34,7 @@ import reclib  # noqa: E402
 EDIT_DEFAULTS = {
     "title": 2.0, "end": 3.0, "minHold": 1.4, "maxSpeed": 14.0, "minSpeed": 1.5, "voPad": 0.35,
     "maxLiveSpeed": 1.35, "calloutMax": 3.6, "spotMax": 6.0, "captionTail": 0.9, "zoomMargin": 0.6,
-    "timerTail": 1.2, "voStart": 0.1,
+    "timerTail": 1.2, "voStart": 0.1, "captionBand": 96,
 }
 OUTPUT_DEFAULTS = {"width": 1920, "height": 1080, "fps": 30, "crf": 14,
                    "deliver": {"width": 1280, "height": 720, "crf": 23, "audioKbps": 128}}
@@ -299,7 +299,11 @@ def plan(cap, e, out_w, out_h, crop):
     if cap.get("endLine"):
         el = cap["endLine"]
         cues.append({"at": body_end + 0.35, "file": el["file"], "seconds": el["seconds"], "text": el["text"]})
+    # Clicks and presses in edit px, so check can tell whether the subtitle band hides one.
+    clicks = [{"at": r3(m(ev["t"])), "x": round(px(ev["x"], ev["y"])[0]), "y": round(px(ev["x"], ev["y"])[1])}
+              for ev in events if ev["type"] == "click"]
     edit = {"title": e["title"], "body": r3(body), "end": e["end"], "duration": r3(e["title"] + body + e["end"]),
+            "size": [out_w, out_h], "captionBand": e["captionBand"], "clicks": clicks,
             "captions": captions, "zooms": zooms, "spots": spots, "markers": markers, "callouts": callouts, "speeds": speeds,
             "timers": timers,
             "beats": [{k: (r3(v) if isinstance(v, float) else v) for k, v in b.items()
@@ -442,6 +446,35 @@ def probe_stream(path):
     return s["width"], s["height"], float(num) / float(den)
 
 
+def cam_at(edit, t):
+    """(scale, x, y) of the composition's camera at edit second t, as edit-shell.html sets it.
+
+    Zooms centre their target in the frame above the subtitle band and clamp to the
+    frame; this uses the settled position, not the 0.3-0.7 s move into it.
+    """
+    w, h = edit.get("size", (1920, 1080))
+    band = edit.get("captionBand", 0)
+    for z in reversed(edit.get("zooms", [])):
+        if z["at"] <= t < z["until"] + (0.55 if z.get("release") else 0):
+            s = z["z"]
+            return (s, min(0, max(w - w * s, w / 2 - z["cx"] * s)), min(0, max(h - h * s, (h - band) / 2 - z["cy"] * s)))
+    return 1.0, 0.0, 0.0
+
+
+def hidden_clicks(edit):
+    """Clicks and presses that land under the subtitle band (while a subtitle shows) or off frame."""
+    w, h = edit.get("size", (1920, 1080))
+    band = edit.get("captionBand", 0)
+    out = []
+    for c in edit.get("clicks", []):
+        s, ox, oy = cam_at(edit, c["at"])
+        x, y = ox + c["x"] * s, oy + c["y"] * s
+        caption = any(k["at"] <= c["at"] < k["until"] for k in edit.get("captions", []))
+        if not (0 <= x < w and 0 <= y < h) or (caption and y > h - band):
+            out.append(f"{c['at']:.1f} s")
+    return out
+
+
 def edit_rows(edit, acc):
     """Acceptance rows read from the edit plan alone: beat fit, marker count, pace."""
     rows = []
@@ -463,6 +496,10 @@ def edit_rows(edit, acc):
     if "minMarkers" in acc:
         n = len(edit.get("markers", []))
         row("markers", n >= acc["minMarkers"], f"{n} marker sweeps (want {acc['minMarkers']}+)")
+    if "clicks" in edit:
+        hid = hidden_clicks(edit)
+        row("clicks", not hid, f"{len(edit['clicks'])} clicks and presses in view, none under the subtitles" if not hid else
+            f"click hidden by the subtitles or off frame at {', '.join(hid)}")
     stalls = [b["id"] for b in beats if b["speed"] == 1 and b["until"] - b["at"] > b["target"] + 2]
     row("pace", not stalls, "no long 1x waits" if not stalls else f"long 1x stretch in: {', '.join(stalls)}")
     return rows

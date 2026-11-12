@@ -43,10 +43,7 @@ async function record() {
 
   const label = (text) => page.locator("article .label", { hasText: text }).first();
   const badges = () => label(/^Licence /).locator("xpath=..");
-  const waitForStatus = async (status) => {
-    await label(new RegExp(`^${status}$`)).waitFor({ timeout: 120_000 });
-    await cap.waitShown();
-  };
+  const waitForStatus = (status) => label(new RegExp(`^${status}$`)).waitFor({ timeout: 120_000 });
   const backToDashboard = async () => {
     await cap.wipe("AppShelf dashboard");
     await cap.fast(() => page.goto(`${APP}/dashboard`, { waitUntil: "load" }));
@@ -61,10 +58,17 @@ async function record() {
     await cap.fast(() => page.waitForURL(/wp\./));
     await cap.waitShown();
   };
-  // Pays on Stripe Checkout with the 4242 test card; `show` highlights the card.
+  // Pays on Stripe Checkout with the 4242 test card. `show` highlights the price and the
+  // card; otherwise (the renewal, a repeat) the form is fast-forwarded. The wipe always plays at 1x.
   const payWithTestCard = async (paidMark, { show }) => {
     await cap.fast(() => page.locator("#cardNumber").waitFor({ timeout: 60_000 }));
     await cap.waitShown();
+    const at = show ? await fillCheckout(paidMark, true) : await cap.fast(() => fillCheckout(paidMark, false));
+    await cap.click(page.locator("button[type=submit]"));
+    await cap.wipe("AppShelf dashboard");
+    return at;
+  };
+  const fillCheckout = async (paidMark, show) => {
     // Checkout picks the currency from the IP address; show the USD price.
     const usd = page.locator("button", { hasText: "USD" }).first();
     if (await usd.isVisible().catch(() => false)) {
@@ -98,9 +102,7 @@ async function record() {
         if (await zip.isVisible().catch(() => false)) await zip.fill("94107");
       });
     }
-    const at = cap.mark(paidMark);
-    await cap.click(page.locator("button[type=submit]"));
-    return at;
+    return cap.mark(paidMark);
   };
   // Each beat starts with a clean frame: the last beat's zoom, spot and callout end here.
   const beat = async (id) => {
@@ -176,10 +178,12 @@ async function record() {
   await beat("cancel");
   await backToDashboard();
   await cap.click(page.getByRole("button", { name: "Cancel plan" }));
+  await cap.wipe("AppShelf dashboard");
   await cap.fast(async () => {
     await page.waitForURL(/plan=cancelled/, { timeout: 30_000 });
     await waitForStatus("Archived");
   });
+  await cap.waitShown();
   await cap.focus(badges(), 1.6);
   await cap.highlight(label(/^Licence /));
   cap.callout("Licence inactive · site archived", "tr");
@@ -193,13 +197,12 @@ async function record() {
   await cap.click(page.getByRole("button", { name: "Renew" }));
   await cap.wipe("Stripe Checkout · test mode");
   // The second payment is a repeat: fast-forward the whole form.
-  const renewed = await cap.fast(() => payWithTestCard("renewed", { show: false }));
+  const renewed = await payWithTestCard("renewed", { show: false });
 
   await beat("back");
-  await cap.fast(async () => {
-    await page.waitForURL(/\/dashboard/, { timeout: 90_000 });
-    await waitForStatus("Live");
-  });
+  await cap.fast(() => page.waitForURL(/\/dashboard/, { timeout: 90_000 }));
+  await cap.waitShown();
+  await cap.fast(() => waitForStatus("Live"));
   const back = cap.mark("back");
   await cap.focus(badges(), 1.6);
   await cap.highlight(label(/^Live$/));

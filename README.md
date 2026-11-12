@@ -14,12 +14,12 @@ for demos. A Cloudflare Tunnel makes it public without opening any port.
 
 ## Demo video
 
-[![AppShelf demo: the Restaurant site live 11 seconds after a Stripe test payment](showcase/media/appshelf-demo-poster.png)](showcase/media/appshelf-demo.mp4)
+[![AppShelf demo: the Restaurant site live 10 seconds after a Stripe test payment](showcase/media/appshelf-demo-poster.png)](showcase/media/appshelf-demo.mp4)
 
-A 47-second narrated walkthrough of the running app, with subtitles
+A 49-second narrated walkthrough of the running app, with subtitles
 ([`appshelf-demo.vtt`](showcase/media/appshelf-demo.vtt)). It covers signing up,
 picking a template and paying with the Stripe test card. The site goes live
-11 seconds after the payment. Then the plan is cancelled (the site is archived)
+10 seconds after the payment. Then the plan is cancelled (the site is archived)
 and renewed (the site is back online).
 
 [`scripts/record-demo.mjs`](scripts/record-demo.mjs) records the real flow with a
