@@ -1,7 +1,8 @@
 # Demo video credits
 
 `appshelf-demo.mp4` is a screen recording of the real AppShelf app (Stripe in
-test mode), made with [`scripts/record-demo.mjs`](../../scripts/record-demo.mjs).
+test mode), made with [`scripts/record-demo.mjs`](../../scripts/record-demo.mjs)
+and the capture library in [`scripts/video`](../../scripts/video/README.md).
 Everything in it is listed here with its source and licence.
 
 | Element | Source | Licence |

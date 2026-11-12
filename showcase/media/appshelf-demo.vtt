@@ -1,57 +1,57 @@
 WEBVTT
 
 1
-00:00:02.107 --> 00:00:05.499
-AppShelf sells hosted WordPress sites, billed with Stripe.
+00:00:02.107 --> 00:00:06.689
+AppShelf sells hosted WordPress sites for nine dollars a month, billed with Stripe.
 
 2
-00:00:07.207 --> 00:00:09.047
-Pick one of three templates.
+00:00:06.839 --> 00:00:08.967
+Pick one of three starter templates.
 
 3
-00:00:10.923 --> 00:00:14.455
+00:00:09.117 --> 00:00:12.648
 Sign up in seconds. There's no email check in this demo.
 
 4
-00:00:15.123 --> 00:00:17.977
-Choose a template, name the site, and pick its address.
+00:00:12.798 --> 00:00:15.872
+Choose a template, name the site, and pick a free address.
 
 5
-00:00:20.555 --> 00:00:23.105
-Then pay on Stripe Checkout with the test card.
+00:00:16.022 --> 00:00:20.429
+Then pay on Stripe Checkout, in test mode, with Stripe's own test card number.
 
 6
-00:00:26.355 --> 00:00:29.790
+00:00:20.579 --> 00:00:24.014
 Stripe sends a webhook, and a worker builds the WordPress site.
 
 7
-00:00:30.955 --> 00:00:32.243
-And it's live.
+00:00:24.164 --> 00:00:26.072
+And just like that, it's live.
 
 8
-00:00:33.578 --> 00:00:36.264
+00:00:26.222 --> 00:00:28.907
 Here's the new restaurant site, ready to edit.
 
 9
-00:00:38.839 --> 00:00:41.920
-Cancel the plan, and the licence turns inactive.
+00:00:29.057 --> 00:00:32.685
+Cancel the plan, and the licence turns inactive right away.
 
 10
-00:00:43.439 --> 00:00:45.685
-Visitors now see an archived site.
+00:00:32.885 --> 00:00:35.948
+Visitors now see a notice that the site is archived.
 
 11
-00:00:46.443 --> 00:00:48.361
-Renew with the same test card.
+00:00:36.098 --> 00:00:39.855
+Renew it from the dashboard, and pay again with the same test card.
 
 12
-00:00:53.058 --> 00:00:55.273
+00:00:40.005 --> 00:00:42.220
 Seconds later, it's back online.
 
 13
-00:00:56.458 --> 00:00:58.433
+00:00:42.370 --> 00:00:44.343
 Same site, same content.
 
 14
-00:01:00.620 --> 00:01:04.190
+00:00:44.743 --> 00:00:48.313
 Built with Next.js, Postgres, Stripe and WordPress.

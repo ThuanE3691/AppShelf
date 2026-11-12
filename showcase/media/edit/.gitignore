@@ -1,4 +1,9 @@
+# everything the demo build writes (scripts/record-demo.mjs); only data/browser.json is a source
 renders/
+builds/
+raw/
 .validate/
-data/env.json
-assets/body.mp4
+assets/video/
+assets/audio/
+data/*
+!data/browser.json

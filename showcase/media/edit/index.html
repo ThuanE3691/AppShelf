@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <!--
   The AppShelf demo video's edit (HyperFrames 0.8.77 + GSAP, silent; audio is mixed afterwards).
-  The middle is assets/body.mp4: the real recording, already cut and sped up by
-  scripts/record-demo.mjs, which also injects window.EDIT (scene lengths, zooms,
-  spotlights, callouts, subtitles, speed badges and the provisioning timer, all in
-  seconds on this timeline and pixels of the 1920x1080 recording).
+  The middle is assets/video/body.mp4: the real recording, already cut and sped up
+  by scripts/video/browser/browser-cut.py (run by scripts/record-demo.mjs), which also
+  injects window.EDIT (scene lengths, zooms, spotlights, marker sweeps, callouts,
+  subtitles, speed badges and timers, all in seconds on this timeline and pixels of
+  the 1920x1080 recording).
   Motion: neo-brutalist-web cards (stamp-in, hard offset shadows, yellow block wipes)
   locked to the AppShelf palette and fonts; camera moves use power3.inOut.
 -->
@@ -49,6 +50,7 @@
       #body { overflow: hidden; }
       #cam { transform-origin: 0 0; }
       #rec { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; }
+      .marker { background: var(--signal); mix-blend-mode: multiply; border-radius: 6px; transform-origin: 0 50%; opacity: 0; visibility: hidden; }
       #spot { border: 4px solid var(--signal); border-radius: 12px; box-shadow: 0 0 0 4000px rgba(18, 18, 18, 0.58); opacity: 0; visibility: hidden; }
 
       /* overlays in screen space */
@@ -58,8 +60,8 @@
       .pos-tl { left: 64px; top: 64px; } .pos-tr { right: 64px; top: 64px; }
       .pos-bl { left: 64px; bottom: 150px; } .pos-br { right: 64px; bottom: 150px; }
       .speed { left: 64px; top: 64px; padding: 12px 20px; background: var(--signal); color: var(--ink); border: 3px solid var(--ink); font: 800 30px/1 "JetBrains Mono", monospace; letter-spacing: 0.04em; opacity: 0; visibility: hidden; }
-      #timer { left: 50%; top: 64px; transform: translateX(-50%); display: flex; gap: 18px; align-items: center; padding: 16px 26px; background: var(--ink); color: var(--paper); border: 3px solid var(--signal); font: 700 32px/1 "JetBrains Mono", monospace; opacity: 0; visibility: hidden; }
-      #timer .n { color: var(--signal); font-variant-numeric: tabular-nums; min-width: 3.2ch; text-align: right; }
+      .timer { left: 50%; top: 64px; transform: translateX(-50%); display: flex; gap: 18px; align-items: center; padding: 16px 26px; background: var(--ink); color: var(--paper); border: 3px solid var(--signal); font: 700 32px/1 "JetBrains Mono", monospace; opacity: 0; visibility: hidden; }
+      .timer .n { color: var(--signal); font-variant-numeric: tabular-nums; min-width: 3.2ch; text-align: right; }
       .cap { left: 0; right: 0; bottom: 0; display: flex; align-items: stretch; min-height: 84px; background: var(--ink); border-top: 6px solid var(--signal); opacity: 0; visibility: hidden; }
       .cap .k { width: 26px; background: var(--signal); }
       .cap .t { display: flex; align-items: center; padding: 14px 34px; font: 500 30px/1.35 "JetBrains Mono", monospace; color: var(--paper); }
@@ -74,7 +76,7 @@
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="63.27" data-width="1920" data-height="1080">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="47.393" data-width="1920" data-height="1080">
       <div id="bg" class="layer"><div id="grid" class="abs"></div></div>
       <section id="sc01" class="scene layer">
         <div class="abs tag">
@@ -92,7 +94,7 @@
       </section>
       <section id="body" class="scene layer">
         <div id="cam" class="layer">
-          <video id="rec" class="clip" src="assets/body.mp4" data-start="2" data-duration="58.27" data-track-index="1" muted playsinline></video>
+          <video id="rec" class="clip" src="assets/video/body.mp4" data-start="2.0" data-duration="42.393" data-track-index="1" muted playsinline></video>
           <div id="spot" class="abs" data-layout-allow-overlap></div>
         </div>
       </section>
@@ -114,7 +116,7 @@
       <div id="fade" class="layer"></div>
     </div>
 
-    <script>/*EDIT:BEGIN*/window.EDIT={"title":2,"body":58.27,"end":3,"duration":63.27,"captions":[{"at":2.107,"until":6.199,"text":"AppShelf sells hosted WordPress sites, billed with Stripe."},{"at":7.207,"until":9.747,"text":"Pick one of three templates."},{"at":10.923,"until":15.023,"text":"Sign up in seconds. There's no email check in this demo."},{"at":15.123,"until":18.677,"text":"Choose a template, name the site, and pick its address."},{"at":20.555,"until":23.805,"text":"Then pay on Stripe Checkout with the test card."},{"at":26.355,"until":30.49,"text":"Stripe sends a webhook, and a worker builds the WordPress site."},{"at":30.955,"until":32.943,"text":"And it's live."},{"at":33.578,"until":36.964,"text":"Here's the new restaurant site, ready to edit."},{"at":38.839,"until":42.62,"text":"Cancel the plan, and the licence turns inactive."},{"at":43.439,"until":46.343,"text":"Visitors now see an archived site."},{"at":46.443,"until":49.061,"text":"Renew with the same test card."},{"at":53.058,"until":55.973,"text":"Seconds later, it's back online."},{"at":56.458,"until":59.133,"text":"Same site, same content."}],"zooms":[{"at":2.548,"until":3.948,"z":1.35,"cx":1484,"cy":744,"release":true},{"at":12.094,"until":15.023,"z":1.3,"cx":1482,"cy":651,"release":true},{"at":15.786,"until":19.422,"z":1.3,"cx":1257,"cy":1237,"release":true},{"at":22.498,"until":24.846,"z":1.45,"cx":1358,"cy":653,"release":true},{"at":30.859,"until":32.259,"z":1.6,"cx":472,"cy":794,"release":true},{"at":35.025,"until":36.425,"z":1.2,"cx":405,"cy":611,"release":true},{"at":41.999,"until":43.399,"z":1.6,"cx":472,"cy":794,"release":true},{"at":55.083,"until":56.483,"z":1.6,"cx":472,"cy":794,"release":true}],"spots":[{"at":2.548,"until":3.948,"x":1198,"y":404,"w":572,"h":680},{"at":8.02,"until":10.113,"x":99,"y":452,"w":1723,"h":889},{"at":22.498,"until":24.846,"x":1094,"y":599,"w":528,"h":109},{"at":28.549,"until":30.853,"x":99,"y":678,"w":1723,"h":528},{"at":30.859,"until":32.259,"x":138,"y":772,"w":667,"h":42},{"at":41.999,"until":43.399,"x":138,"y":772,"w":667,"h":42},{"at":44.404,"until":45.804,"x":429,"y":140,"w":1062,"h":32},{"at":55.083,"until":56.483,"x":138,"y":772,"w":667,"h":42}],"callouts":[{"at":2.554,"until":3.954,"text":"WordPress site · $9/month · Stripe test mode","pos":"bl"},{"at":22.504,"until":24.846,"text":"Stripe test card 4242 · 12/34 · 123","pos":"tr"},{"at":28.549,"until":30.853,"text":"Webhook → job → WordPress","pos":"tr"},{"at":30.865,"until":32.265,"text":"Site live in 10 s","pos":"tr"},{"at":42.003,"until":43.403,"text":"Licence inactive · site archived","pos":"tr"},{"at":55.09,"until":56.49,"text":"Renewed · back online in 7 s","pos":"tr"}],"speeds":[{"at":20.455,"until":21.016,"speed":4},{"at":23.239,"until":23.642,"speed":4},{"at":26.253,"until":28.549,"speed":2},{"at":29.502,"until":30.853,"speed":2},{"at":40.672,"until":41.993,"speed":4},{"at":52.955,"until":55.075,"speed":3}],"timer":{"at":26.255,"until":32.053,"label":"Since payment","keys":[[26.253,0],[26.253,0.001],[28.549,5.704],[29.502,6.657],[30.853,10.016]]}};/*EDIT:END*/</script>
+    <script>/*EDIT:BEGIN*/window.EDIT={"title": 2.0, "body": 42.393, "end": 3.0, "duration": 47.393, "captions": [{"at": 2.107, "until": 6.739, "text": "AppShelf sells hosted WordPress sites for nine dollars a month, billed with Stripe."}, {"at": 6.839, "until": 9.017, "text": "Pick one of three starter templates."}, {"at": 9.117, "until": 12.698, "text": "Sign up in seconds. There's no email check in this demo."}, {"at": 12.798, "until": 15.922, "text": "Choose a template, name the site, and pick a free address."}, {"at": 16.022, "until": 20.479, "text": "Then pay on Stripe Checkout, in test mode, with Stripe's own test card number."}, {"at": 20.579, "until": 24.064, "text": "Stripe sends a webhook, and a worker builds the WordPress site."}, {"at": 24.164, "until": 26.122, "text": "And just like that, it's live."}, {"at": 26.222, "until": 28.957, "text": "Here's the new restaurant site, ready to edit."}, {"at": 29.057, "until": 32.785, "text": "Cancel the plan, and the licence turns inactive right away."}, {"at": 32.885, "until": 35.998, "text": "Visitors now see a notice that the site is archived."}, {"at": 36.098, "until": 39.905, "text": "Renew it from the dashboard, and pay again with the same test card."}, {"at": 40.005, "until": 42.27, "text": "Seconds later, it's back online."}, {"at": 42.37, "until": 44.393, "text": "Same site, same content."}], "zooms": [{"at": 2.709, "until": 6.739, "z": 1.35, "cx": 1484, "cy": 744, "release": true}, {"at": 10.121, "until": 12.202, "z": 1.3, "cx": 1482, "cy": 651, "release": true}, {"at": 13.328, "until": 15.643, "z": 1.3, "cx": 1257, "cy": 547, "release": true}, {"at": 17.575, "until": 19.931, "z": 1.45, "cx": 1358, "cy": 653, "release": true}, {"at": 24.079, "until": 26.113, "z": 1.6, "cx": 472, "cy": 680, "release": true}, {"at": 27.884, "until": 28.948, "z": 1.2, "cx": 405, "cy": 611, "release": true}, {"at": 31.138, "until": 32.776, "z": 1.6, "cx": 472, "cy": 794, "release": true}, {"at": 40.362, "until": 42.26, "z": 1.6, "cx": 472, "cy": 794, "release": true}], "spots": [{"at": 7.209, "until": 9.017, "x": 99, "y": 204, "w": 1723, "h": 889}, {"at": 22.078, "until": 23.379, "x": 99, "y": 565, "w": 1723, "h": 528}], "markers": [{"at": 3.26, "until": 6.739, "x": 1231, "y": 491, "w": 265, "h": 49}, {"at": 14.831, "until": 15.643, "x": 778, "y": 779, "w": 91, "h": 27}, {"at": 17.542, "until": 20.47, "x": 251, "y": 194, "w": 131, "h": 73}, {"at": 19.032, "until": 20.47, "x": 1094, "y": 599, "w": 528, "h": 55}, {"at": 24.61, "until": 26.113, "x": 153, "y": 666, "w": 51, "h": 26}, {"at": 32.105, "until": 32.776, "x": 298, "y": 780, "w": 205, "h": 26}, {"at": 35.058, "until": 35.989, "x": 429, "y": 141, "w": 388, "h": 29}, {"at": 41.464, "until": 42.26, "x": 153, "y": 780, "w": 51, "h": 26}], "callouts": [{"at": 3.26, "until": 6.739, "text": "WordPress site · $9/month · Stripe test mode", "pos": "bl"}, {"at": 19.032, "until": 20.432, "text": "Stripe test card 4242 · 12/34 · 123", "pos": "tr"}, {"at": 22.042, "until": 23.379, "text": "Webhook → job → WordPress", "pos": "tr"}, {"at": 24.61, "until": 26.113, "text": "Site live in 11 s", "pos": "tr"}, {"at": 32.105, "until": 33.313, "text": "Licence inactive · site archived", "pos": "tr"}, {"at": 41.464, "until": 42.805, "text": "Renewed · back online in 7 s", "pos": "tr"}], "speeds": [{"at": 6.739, "until": 7.181, "speed": 2}, {"at": 20.47, "until": 21.341, "speed": 7}, {"at": 23.045, "until": 23.451, "speed": 7}, {"at": 38.591, "until": 39.288, "speed": 14}, {"at": 39.895, "until": 40.342, "speed": 14}], "timers": [{"at": 20.022, "until": 24.651, "label": "Since payment", "keys": [[20.022, 0], [20.47, 0.604], [21.341, 6.7], [23.045, 8.404], [23.451, 11.249]]}], "beats": [{"id": "intro", "at": 2.007, "until": 6.739, "vo": 4.382, "target": 4.732, "speed": 1.0, "live": 1.001, "tail": 0.25}, {"id": "templates", "at": 6.739, "until": 9.017, "vo": 1.928, "target": 2.278, "speed": 2.074, "live": 1.0, "tail": 0.25}, {"id": "signup", "at": 9.017, "until": 12.698, "vo": 3.331, "target": 3.681, "speed": 14, "live": 1.221, "tail": 0.25}, {"id": "newSite", "at": 12.698, "until": 15.922, "vo": 2.874, "target": 3.224, "speed": 14, "live": 1.269, "tail": 0.25}, {"id": "pay", "at": 15.922, "until": 20.479, "vo": 4.207, "target": 4.557, "speed": 14, "live": 1.344, "tail": 0.25}, {"id": "build", "at": 20.479, "until": 24.064, "vo": 3.235, "target": 3.585, "speed": 7.001, "live": 1.0, "tail": 0.25}, {"id": "live", "at": 24.064, "until": 26.122, "vo": 1.708, "target": 2.058, "speed": 1.0, "live": 1.003, "tail": 0.25}, {"id": "site", "at": 26.122, "until": 28.957, "vo": 2.485, "target": 2.835, "speed": 1.133, "live": 1.0, "tail": 0.25}, {"id": "cancel", "at": 28.957, "until": 32.785, "vo": 3.428, "target": 3.778, "speed": 14, "live": 1.35, "tail": 0.3}, {"id": "archived", "at": 32.785, "until": 35.998, "vo": 2.864, "target": 3.214, "speed": 14, "live": 1.001, "tail": 0.25}, {"id": "renew", "at": 35.998, "until": 39.905, "vo": 3.556, "target": 3.906, "speed": 14, "live": 1.012, "tail": 0.25}, {"id": "back", "at": 39.905, "until": 42.27, "vo": 2.015, "target": 2.365, "speed": 14, "live": 1.133, "tail": 0.25}, {"id": "same", "at": 42.27, "until": 44.393, "vo": 1.773, "target": 2.123, "speed": 1.082, "live": 1.0, "tail": 0.25}], "sync": {"frames": 2417, "decoded": 2409, "drift": -5.903, "bodyPlanned": 42.384, "bodyRendered": 42.4}, "cards": null};/*EDIT:END*/</script>
     <script>
       (() => {
         const E = window.EDIT;
@@ -154,8 +156,15 @@
         const caps = E.captions.map((c) => ({ ...c, el: make("cap", `<div class="k"></div><div class="t">${esc(c.text)}</div>`) }));
         const calls = E.callouts.map((c) => ({ ...c, el: make(`callout pos-${c.pos}`, `<div class="k"></div><div class="v">${esc(c.text)}</div>`) }));
         const speeds = E.speeds.map((s) => ({ ...s, el: make("speed", `▶▶ ${s.speed}×`) }));
-        const timer = E.timer ? make("", `<span>${esc(E.timer.label)}</span><span class="n">0 s</span>`) : null;
-        if (timer) timer.id = "timer";
+        const timers = (E.timers || []).map((t) => ({ ...t, el: make("timer", `<span>${esc(t.label)}</span><span class="n">0 s</span>`) }));
+        // Markers sit in #cam between the recording and the spotlight (recording space), so zooms keep them on the text.
+        const marks = (E.markers || []).map((m) => {
+          const el = document.createElement("div");
+          el.className = "abs marker";
+          Object.assign(el.style, { left: `${m.x - 10}px`, top: `${m.y - 4}px`, width: `${m.w + 20}px`, height: `${m.h + 8}px` });
+          $("#cam").insertBefore(el, $("#spot"));
+          return { ...m, el };
+        });
 
         // ---------- vocabulary ----------
         const stamp = (e, t, o = {}) => tl.fromTo(e, { autoAlpha: 0, scale: o.from ?? 1.18, rotate: o.rot0 ?? 0 },
@@ -220,21 +229,26 @@
           const next = E.spots[i + 1];
           if (!next || Math.abs(next.at - s.until) >= 0.05) tl.to("#spot", { autoAlpha: 0, duration: 0.25, ease: "power2.in" }, s.until - 0.25);
         });
+        // The sweep: left to right in 0.3 s once the cursor has pressed; out with its beat.
+        marks.forEach((m) => {
+          tl.fromTo(m.el, { autoAlpha: 1, scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power2.out", immediateRender: false }, m.at);
+          tl.to(m.el, { autoAlpha: 0, duration: 0.2, ease: "power2.in" }, Math.max(m.at + 0.3, m.until - 0.2));
+        });
         calls.forEach((c) => showFor(c.el, c.at, c.until, { x: c.pos.endsWith("l") ? -40 : 40, scale: 0.9 }));
         speeds.forEach((s) => showFor(s.el, s.at, s.until, { scale: 0.7 }));
         caps.forEach((c) => {
           tl.fromTo(c.el, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.22, ease: "power3.out", immediateRender: false }, c.at);
           tl.to(c.el, { autoAlpha: 0, duration: 0.15, ease: "power2.in" }, c.until - 0.15);
         });
-        if (timer) {
-          const T = E.timer, n = $(".n", timer), v = { s: 0 };
-          showFor(timer, T.at, T.until, { y: -24 });
+        timers.forEach((T) => {
+          const n = $(".n", T.el), v = { s: 0 };
+          showFor(T.el, T.at, T.until, { y: -24 });
           T.keys.slice(1).forEach(([t, s], i) => {
             const [t0, s0] = T.keys[i];
             tl.fromTo(v, { s: s0 }, { s, duration: Math.max(1 / 30, t - t0), ease: "none", immediateRender: false,
               onUpdate: () => { n.textContent = `${Math.floor(v.s)} s`; } }, t0);
           });
-        }
+        });
 
         // ---------- end card (3 s): the slab slides off to reveal the stack and the repo ----------
         tl.set("#sc03", { autoAlpha: 1 }, B1);
