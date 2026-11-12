@@ -1,0 +1,100 @@
+{
+  "_doc": "Settings for scripts/record-demo.mjs and scripts/video (see scripts/video/README.md). Keys starting with _ are notes.",
+  "app": {
+    "url": "http://app.appshelf.localhost"
+  },
+  "browser": {
+    "channel": "chrome",
+    "locale": "en-US"
+  },
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "output": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "crf": 14,
+    "deliver": {
+      "width": 1280,
+      "height": 720,
+      "crf": 23,
+      "audioKbps": 128
+    }
+  },
+  "timecode": {
+    "height": 8,
+    "bits": 24,
+    "x": 16,
+    "barWidth": 48
+  },
+  "_safe": "CSS px the callouts (top) and subtitles (bottom) cover; clicks and highlights are scrolled out of them.",
+  "safe": {
+    "top": 0,
+    "bottom": 110
+  },
+  "brand": {
+    "ink": "#121212",
+    "paper": "#ffffff",
+    "accent": "#ffd400",
+    "muted": "#a3a3a3",
+    "overlayFont": "\"JetBrains Mono\", ui-monospace, Consolas, monospace",
+    "overlayFontCss": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&display=swap"
+  },
+  "_wipes": "Page-wipe label by URL regex, first match wins.",
+  "wipes": [
+    { "match": "checkout\\.stripe\\.com", "label": "Stripe Checkout · test mode" },
+    { "match": "^https?://wp\\.", "label": "WordPress site" },
+    { "match": "/dashboard", "label": "AppShelf dashboard" },
+    { "match": ".*", "label": "AppShelf" }
+  ],
+  "tts": {
+    "url": "http://localhost:8880",
+    "model": "kokoro",
+    "voice": "af_heart",
+    "speed": 1.12
+  },
+  "_beats": "One line per beat; a beat lasts its line plus edit.voPad. Per-take numbers go in callouts, not lines (they would miss the TTS cache).",
+  "beats": [
+    { "id": "intro", "line": "AppShelf sells hosted WordPress sites, billed with Stripe." },
+    { "id": "templates", "line": "Pick one of three starter templates." },
+    { "id": "signup", "line": "Sign up in seconds. There's no email check in this demo." },
+    { "id": "newSite", "line": "Choose a template, name the site, and check that its web address is still free." },
+    { "id": "pay", "line": "Stripe Checkout opens in test mode. Pay with Stripe's own test card number, and the payment goes through." },
+    { "id": "build", "line": "A Stripe webhook starts a worker that builds the site." },
+    { "id": "live", "line": "And it's live." },
+    { "id": "site", "line": "Here's the new site, ready to edit." },
+    { "id": "cancel", "line": "Now cancel the plan on the dashboard, and the site's licence turns inactive right away." },
+    { "id": "archived", "line": "Visitors now see a notice that the site is archived." },
+    { "id": "renew", "line": "Renew it from the dashboard, and pay once more with the same Stripe test card." },
+    { "id": "back", "line": "A few seconds later, it's back online." },
+    { "id": "same", "line": "Same site, same content." }
+  ],
+  "endLine": "Built with Next.js, Postgres, Stripe and WordPress.",
+  "edit": {
+    "title": 1.6,
+    "end": 3.0,
+    "voPad": 0.35,
+    "maxLiveSpeed": 1.35,
+    "minHold": 1.4,
+    "maxSpeed": 14,
+    "minSpeed": 1.5,
+    "afterFast": 0.6,
+    "afterMark": 0.9,
+    "wipeHold": 0.5,
+    "captionBand": 96,
+    "calloutMax": 3.6,
+    "spotMax": 6.0
+  },
+  "accept": {
+    "minSeconds": 40,
+    "maxSeconds": 50,
+    "maxMB": 10,
+    "syncFrames": 1,
+    "lufs": [-20, -12],
+    "maxPeak": -1.0,
+    "maxTail": 0.5,
+    "minMarkers": 6
+  }
+}

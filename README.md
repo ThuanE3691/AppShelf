@@ -14,13 +14,26 @@ for demos. A Cloudflare Tunnel makes it public without opening any port.
 
 ## Demo video
 
-[![AppShelf demo: a Restaurant site live 5 seconds after a Stripe test payment](showcase/media/appshelf-demo-poster.png)](showcase/media/appshelf-demo.mp4)
+[![AppShelf demo: the Restaurant site live 10 seconds after a Stripe test payment](showcase/media/appshelf-demo-poster.png)](showcase/media/appshelf-demo.mp4)
 
-A 1 m 42 s captioned walkthrough (no sound) of the running app: sign up, pick a
-template, pay with the Stripe test card, see the site go live in about 5 seconds,
-cancel the plan (site archived) and renew it (site back online). The flow is
-recorded by [`scripts/record-demo.mjs`](scripts/record-demo.mjs); the title and
-end cards come from [`showcase/media/cards`](showcase/media/cards).
+A 49-second narrated walkthrough of the running app, with subtitles
+([`appshelf-demo.vtt`](showcase/media/appshelf-demo.vtt)). It covers signing up,
+picking a template and paying with the Stripe test card. The site goes live
+10 seconds after the payment. Then the plan is cancelled (the site is archived)
+and renewed (the site is back online).
+
+[`scripts/record-demo.mjs`](scripts/record-demo.mjs) records the real flow with a
+visible cursor and page wipes, on the capture library in
+[`scripts/video`](scripts/video/README.md). Each scene lasts as long as its
+narration line: typing, page loads and provisioning are fast-forwarded to fit,
+with an on-screen timer. Key text gets a yellow marker sweep after a visual-only
+press. The zooms, markers, callouts and title/end cards are a HyperFrames
+composition in [`showcase/media/edit`](showcase/media/edit), whose
+`data/browser.json` holds the lines and the acceptance checks. The English
+voice-over is generated locally with Kokoro TTS. The background music is synthesised by
+[`showcase/media/music/generate-bed.py`](showcase/media/music/generate-bed.py)
+and ducked under the voice. Sources and licences are listed in
+[`showcase/media/CREDITS.md`](showcase/media/CREDITS.md).
 
 ## Architecture
 
